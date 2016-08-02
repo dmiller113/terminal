@@ -1,0 +1,48 @@
+MVP Specs
+=========
+
+- 2 Floor Dungeon -- Made to look like _ShadowRun_ network
+- Boss on Second Floor
+- Three Different Bosses, 2 by chance, and 1 by Dungeon Triggers
+- 3 different starting ability/stat packages (Bumper, ranged, foomer/AoE)
+- 6 Ability slots:
+  - Bump,
+  - Ranged Attack,
+  - 100% attack, 0% utility
+  - 80% attack, 33% utility
+  - 60% attack, 50% utility
+  - 150% attack, 150% utility (Ultimate, Requires a resource)
+- 4 Stats:
+  - Hardening: Mitigates nonFocused damage.
+  - Scanning: Extends the range that you passively scan, and sight range. Weights random ranges of abilities toward the higher end of the ranges.
+  - Stealth: Reduces the range that enemies detect you at, and weights oncoming abilities towards the lower end of their spectrum.
+  - Offense: Increases the upper bound of damaging abilities.
+  - Sight is baseline 8 spaces, with Scan giving 1 range per.
+  - Scan gives the ability to see mobs through obstructions at a rate of 1 per 3 Scan.
+  - Scan boosts ability range minimum percent by 2.5% per point.
+  - Stealth reduces Detection range at 1 square per 1.
+  - Stealth reduces ability range maximum percent by 2.5% per point.
+  - Hardening reduces nonFocused damage at a 1:1 basis.
+  - Attack increases ability range maximum percent by 2.5% per point
+- 7 Enemies:
+  - Barrier: Low movement blocking ICE, high HP with abilities that penalize abilities used on friendlies near it. Produces abilities that aid in defense, but also has strong close range attacks.
+  - Tar Pit: High Stealth ICE that attempts to attack the terrain around the player from stealth, also attempts to degrade the player, inflicting ability corruption. Produces abilities that alter the battlefield and debilitate enemies. Also produces abilities that aid in stealth.
+  - Blaster: Heavy Attacking ranged ICE. Deals heavy damage in limited ranges/angles. Produces abilities that deal more damage then normal, but have conditions or focused ranges.
+  - Mediator: Utility focused ICE. Aids other ICE and helps maneuver friendlies around the battlefield. Produces abilites that aid in maneuvering the player and enemies.
+  - Daemons: Annoyance ICE. Specializes in replication and Point Blank AoEs. Produces AoE centered abilities with the drawback of effecting the player in addition to themselves.
+  - Engineer: Battlefield builders. Alters the battlefield by constructing various objects, from cover to nodes that produce effects, to turrets that use abilities. Produces abilities that create temporary units that use abilities.
+  - Tracer: The eyes of the network's AI. Uses abilities that bring more attention from the network's security AI, and System Administrators. Also uses abilities that weight friendly abilities toward the higher end of their ranges. Produces abilities that give information to the player.
+- Enemies have a range of abilities that they can spawn with, altered every game to a subset of their abilities. They also have varations based upon ability alterations. Varients are colored differently, and have key words describing their alterations.
+- No experience system. Gain a "level" each time you enter a new network. Gaining a level allows you to strengthen a slot and increase a stat.
+- Abilities can be tied to a stat that increase their effectiveness.
+- Abilities are analyzed from enemies and their corpses. Each ability has an amount that needs to be analyzed.
+- Analyzed Abilities are stored up to a 26 point capacity.
+- Abilities can be deleted to make room.
+- Items are picked up when moved over, and produce an effect immediately.
+- Items are:
+  - Health increases: 15%, 35%, and 50%
+  - Damage increases: 20%, 50%, and 100%
+  - Shield amounts: 50% of HP, and 100% of HP
+  - Analyze Up: 100p, 250p, and 500p for All, One, and One ability being analyzed.
+- Component based.
+- Components are event based.
