@@ -2,6 +2,12 @@
 Game.Mixins.Movable = {
   name: "Movable",
   groupName: "Movable",
+  listeners:
+    onMove:
+      priority: 100
+      func: (args) ->
+        console.log("we moved")
+
   tryMove: (x, y, map) ->
     tile = map.getTile(x, y)
     target = map.getEntityAt(x, y)

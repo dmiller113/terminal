@@ -519,6 +519,14 @@
   Game.Mixins.Movable = {
     name: "Movable",
     groupName: "Movable",
+    listeners: {
+      onMove: {
+        priority: 100,
+        func: function(args) {
+          return console.log("we moved");
+        }
+      }
+    },
     tryMove: function(x, y, map) {
       var target, tile;
       tile = map.getTile(x, y);
@@ -687,6 +695,7 @@
       var dX, dY;
       dX = this._player.getX() + cx;
       dY = this._player.getY() + cy;
+      this._player.raiseEvent("onMove");
       return this._player.tryMove(dX, dY, this._map);
     },
     handleInput: function(eventType, event) {
@@ -899,7 +908,7 @@
     extend(Entity, superClass);
 
     function Entity(options) {
-      var j, key, len, mixin, mixins, value;
+      var j, key, len, listener, listeners, mixin, mixins, ref, ref1, value;
       options = options || {};
       Entity.__super__.constructor.call(this, options);
       this.name = options.name || "";
@@ -908,6 +917,7 @@
       this._map = options.map || null;
       this._attachedMixins = {};
       this._attachedMixinGroups = {};
+      this._attachedListeners = {};
       mixins = options.mixins || [];
       for (j = 0, len = mixins.length; j < len; j++) {
         mixin = mixins[j];
@@ -917,9 +927,26 @@
         }
         for (key in mixin) {
           value = mixin[key];
-          if (key !== "name" && key !== "init" && !this.hasOwnProperty(key)) {
+          if (key !== "name" && key !== "init" && key !== "listeners" && !this.hasOwnProperty(key)) {
             this[key] = value;
           }
+        }
+        if (mixin.listeners) {
+          ref = mixin.listeners;
+          for (key in ref) {
+            listener = ref[key];
+            if (!(key in this._attachedListeners)) {
+              this._attachedListeners[key] = [];
+            }
+            this._attachedListeners[key].push(listener);
+          }
+        }
+        ref1 = this._attachedListeners;
+        for (key in ref1) {
+          listeners = ref1[key];
+          listeners.sort(function(a, b) {
+            return a.priority - b.priority;
+          });
         }
         if ("init" in mixin) {
           mixin.init.call(this, options);
@@ -996,6 +1023,20 @@
       } else {
         return false;
       }
+    };
+
+    Entity.prototype.raiseEvent = function(event) {
+      var j, len, listener, ref, results1;
+      if (!this._attachedListeners[event]) {
+        return;
+      }
+      ref = this._attachedListeners[event];
+      results1 = [];
+      for (j = 0, len = ref.length; j < len; j++) {
+        listener = ref[j];
+        results1.push(listener.func.apply(this, arguments));
+      }
+      return results1;
     };
 
     return Entity;

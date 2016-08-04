@@ -123,7 +123,7 @@ Game.Screen.playScreen =
 
     # Y
     dY = @_player.getY() + cy
-
+    @_player.raiseEvent("onMove")
     @_player.tryMove(dX, dY, @_map)
 
   handleInput: (eventType, event) ->

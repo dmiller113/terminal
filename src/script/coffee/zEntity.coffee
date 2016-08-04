@@ -13,6 +13,7 @@ class Entity extends Glyph
     # Handle Mixins
     @_attachedMixins = {}
     @_attachedMixinGroups = {}
+    @_attachedListeners = {}
 
     mixins = options.mixins || []
 
@@ -25,8 +26,22 @@ class Entity extends Glyph
         @_attachedMixinGroups[mixin.groupName] = true
 
       # Add the properties of the mixin to this entity.
-      for key, value of mixin when (key != "name" && key != "init" && !@hasOwnProperty(key))
+      for key, value of mixin when (key != "name" && key != "init" && key != "listeners" && !@hasOwnProperty(key))
         @[key] = value
+
+      if mixin.listeners
+        for key, listener of mixin.listeners
+          # check to see if we've already have this listener
+          if !(key of @_attachedListeners)
+            @_attachedListeners[key] = []
+
+          # Add the listener to the array
+          @_attachedListeners[key].push(listener)
+
+      for key, listeners of @_attachedListeners
+        listeners.sort((a, b) ->
+          a.priority - b.priority
+        )
 
       if "init" of mixin
         mixin.init.call(this, options)
@@ -86,3 +101,9 @@ class Entity extends Glyph
       @_attachedMixins[obj] || @_attachedMixinGroups[obj] || false
     else
       false
+
+  raiseEvent: (event) ->
+    if !(@_attachedListeners[event])
+      return
+    for listener in @_attachedListeners[event]
+      listener.func.apply(this, arguments)
