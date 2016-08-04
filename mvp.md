@@ -9,8 +9,8 @@ MVP Specs
   - Bump,
   - Ranged Attack,
   - 100% attack, 0% utility
-  - 80% attack, 33% utility
-  - 60% attack, 50% utility
+  - 80% attack, 80% utility
+  - 0% attack, 100% utility
   - 150% attack, 150% utility (Ultimate, Requires a resource)
 - 4 Stats:
   - Hardening: Mitigates nonFocused damage.
