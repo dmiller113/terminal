@@ -9,7 +9,7 @@ Game.playerTemplate = {
   mixins: [Game.Mixins.Movable, Game.Mixins.PlayerActor,
     Game.Mixins.SimpleAttacker, Game.Mixins.MessageRecipient,
     Game.Mixins.SimpleDestructible, Game.Mixins.Inventory,
-    Game.Mixins.PlayerPickup]
+    Game.Mixins.PlayerPickup,],
 }
 
 Game.EntityRepository = new Repository('entities', Entity)

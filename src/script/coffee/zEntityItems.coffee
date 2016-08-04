@@ -6,8 +6,7 @@ Game.ItemRepository.define({
   foreground: "white",
   background: "black",
   useEffect: (target) ->
-    if target.hasMixin("Destructible")
-      target.takeDamage(@, 41)
+    target.raiseEvent("takeDamage", {source: @, damage: {type: "focused", amount: 41}})
 
   mixins: [Game.Mixins.WalkoverEffectItem]
 })

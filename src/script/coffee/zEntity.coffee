@@ -40,7 +40,7 @@ class Entity extends Glyph
 
       for key, listeners of @_attachedListeners
         listeners.sort((a, b) ->
-          a.priority - b.priority
+          b.priority - a.priority
         )
 
       if "init" of mixin

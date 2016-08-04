@@ -202,7 +202,8 @@ class ItemListScreen
     display.drawText(0, 0, @_caption)
     row = 0
     for letter, item of @_items
-      display.drawText(0, row + 2, letter + ' - ' + item.describeA(true))
+      if item
+        display.drawText(0, row + 2, letter + ' - ' + item.describeA(true))
       row += 1
 
   executeOkFunction: () ->

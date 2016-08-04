@@ -240,7 +240,15 @@
 
   Game.Messages = {};
 
+  Game.parseMessage = function(message, args) {
+    if (args) {
+      message = vsprintf(message, args);
+    }
+    return message;
+  };
+
   Game.sendMessage = function(recipient, message, args) {
+    console.warn("Depreciated. Use events.");
     if (recipient.hasMixin("MessageRecipient")) {
       if (args) {
         message = vsprintf(message, args);
@@ -263,6 +271,37 @@
 
   Game.Mixins.MessageRecipient = {
     name: "MessageRecipient",
+    listeners: {
+      onAttacking: {
+        priority: 15,
+        func: function(type, dict) {
+          var damage, target;
+          target = dict.target;
+          damage = dict.damage.amount;
+          return this.recieveMessage(Game.parseMessage(Game.Messages.attackMessage, [this.describeA(true), target.describeA(false), damage]));
+        }
+      },
+      takeDamage: {
+        priority: 15,
+        func: function(type, dict) {
+          var damage;
+          damage = dict.damage.amount;
+          return this.recieveMessage(Game.parseMessage(Game.Messages.damageMessage, [this.describeA(true), damage]));
+        }
+      },
+      onDeath: {
+        priority: 15,
+        func: function(type, dict) {
+          var source;
+          source = dict.source;
+          if (this.hasMixin("PlayerActor")) {
+            return this.recieveMessage(Game.parseMessage(Game.Messages.dieMessage));
+          } else {
+            return this.recieveMessage(Game.parseMessage(Game.Messages.killMessage, [source.describeA(True), this.describeA()]));
+          }
+        }
+      }
+    },
     init: function(template) {
       return this._messages = [];
     },
@@ -343,13 +382,25 @@
       return this._atkValue;
     },
     attack: function(target) {
-      var rDmg;
+      var damage, rDmg;
       if (target.hasMixin("Destructible")) {
         rDmg = Math.max(1, Math.floor((Math.random() + .5) * this._atkValue));
-        target.takeDamage(this, rDmg);
-        if (this.hasMixin("MessageRecipient")) {
-          Game.sendMessage(this, Game.Messages.attackMessage, [this.describeA(true), target.describeA(false), rDmg]);
-        }
+        damage = {
+          amount: rDmg,
+          type: "normal"
+        };
+        this.raiseEvent('onAttacking', {
+          damage: damage,
+          target: target
+        });
+        target.raiseEvent('onAttack', {
+          damage: damage,
+          source: this
+        });
+        target.raiseEvent('takeDamage', {
+          damage: damage,
+          source: this
+        });
         return true;
       } else {
         return false;
@@ -357,23 +408,81 @@
     }
   };
 
+  Game.Mixins.FireAttacker = {
+    name: "FireAttacker",
+    groupName: "Attacker",
+    listeners: {
+      onAttacking: {
+        priority: 75,
+        func: function(type, dict) {
+          dict.damage.amount += 5;
+          return dict.damage.type += ',fire';
+        }
+      }
+    }
+  };
+
   Game.Mixins.FragileDestructible = {
     name: "FragileDestructible",
     groupName: "Destructible",
+    listeners: {
+      takeDamage: {
+        priority: 25,
+        func: function(type, dict) {
+          var damage, source;
+          damage = dict.damage.amount;
+          source = dict.source;
+          this._hp -= damage;
+          if (this._hp < 0) {
+            source.raiseEvent('onKill');
+            return this.raiseEvent('onDeath');
+          }
+        }
+      },
+      onDeath: {
+        priority: 25,
+        func: function(type, dict) {
+          return this.getMap().removeEntity(this);
+        }
+      }
+    },
     init: function() {
       return this._hp = 0;
-    },
-    takeDamage: function(actor, damage) {
-      this._hp -= damage;
-      if (this._hp < 0) {
-        return this.getMap().removeEntity(this);
-      }
     }
   };
 
   Game.Mixins.SimpleDestructible = {
     name: "SimpleDestructible",
     groupName: "Destructible",
+    listeners: {
+      takeDamage: {
+        priority: 25,
+        func: function(type, dict) {
+          var damage, realDamage, source;
+          damage = dict.damage.amount;
+          source = dict.source;
+          realDamage = Math.max(1, damage - this._defValue);
+          this._hp -= realDamage;
+          if (this._hp < 0) {
+            source.raiseEvent('onKill', {
+              damage: damage,
+              target: this
+            });
+            return this.raiseEvent('onDeath', {
+              source: source
+            });
+          }
+        }
+      },
+      onDeath: {
+        priority: 25,
+        func: function(type, dict) {
+          if (!this.hasMixin("PlayerActor")) {
+            return this.getMap().removeEntity(this);
+          }
+        }
+      }
+    },
     init: function(template) {
       this._maxHp = template['maxHp'] || 10;
       this._hp = template['Hp'] || this._maxHp;
@@ -387,24 +496,6 @@
     },
     getDef: function() {
       return this._defValue;
-    },
-    takeDamage: function(actor, damage) {
-      var realDamage;
-      realDamage = Math.max(1, damage - this._defValue);
-      if (this.hasMixin("MessageRecipient")) {
-        Game.sendMessage(this, Game.Messages.damageMessage, [actor.describeA(true), realDamage]);
-      }
-      this._hp -= realDamage;
-      if (this._hp < 0) {
-        if (this.hasMixin("MessageRecipient") && this.hasMixin("PlayerActor")) {
-          Game.sendMessage(this, Game.Messages.dieMessage);
-        } else if (actor.hasMixin("MessageRecipient")) {
-          Game.sendMessage(actor, Game.Messages.killMessage, [actor.describeA(True), this.describeA()]);
-        }
-        if (!this.hasMixin("PlayerActor")) {
-          return this.getMap().removeEntity(this);
-        }
-      }
     }
   };
 
@@ -484,49 +575,62 @@
   Game.Mixins.PlayerPickup = {
     name: "PlayerPickup",
     groupName: "Pickup",
-    pickup: function(item) {
-      if (this.addToInventory(item)) {
-        this.getMap().removeEntity(item);
+    listeners: {
+      pickup: {
+        priority: 15,
+        func: function(type, dict) {
+          var item;
+          item = dict.item;
+          if (this.addToInventory(item)) {
+            this.getMap().removeEntity(item);
+          }
+          return console.log(this.inventorySlotsOpen());
+        }
       }
-      return console.log(this.inventorySlotsOpen());
     }
   };
 
   Game.Mixins.WalkoverEffectItem = {
     name: "WalkoverEffectItem",
     groupName: "Item",
+    listeners: {
+      onWalkedOn: {
+        priority: 50,
+        func: function(type, dict) {
+          var actor;
+          actor = dict.source;
+          return this._useEffect(actor, this);
+        }
+      }
+    },
     init: function(template) {
       return this._useEffect = template.useEffect || function(actor) {};
-    },
-    walkedOver: function(actor) {
-      return this._useEffect(actor, this);
     }
   };
 
   Game.Mixins.WalkoverPickupItem = {
     name: "WalkoverPickupItem",
     groupName: "Item",
+    listeners: {
+      onWalkedOn: {
+        priority: 50,
+        func: function(type, dict) {
+          var actor;
+          actor = dict.source;
+          return actor.raiseEvent('pickup', {
+            item: this
+          });
+        }
+      }
+    },
     init: function(template) {
       return this._useEffect = template.useEffect || function(actor) {};
-    },
-    walkedOver: function(actor) {
-      if (actor.hasMixin("Pickup")) {
-        return actor.pickup(this);
-      }
     }
   };
 
   Game.Mixins.Movable = {
     name: "Movable",
     groupName: "Movable",
-    listeners: {
-      onMove: {
-        priority: 100,
-        func: function(args) {
-          return console.log("we moved");
-        }
-      }
-    },
     tryMove: function(x, y, map) {
       var target, tile;
       tile = map.getTile(x, y);
@@ -536,8 +640,10 @@
       } else if (target._blocksMovement) {
         return false;
       } else if (tile.isWalkable()) {
-        if (target && target.hasMixin("Item")) {
-          target.walkedOver(this);
+        if (target) {
+          target.raiseEvent("onWalkedOn", {
+            source: this
+          });
         }
         this._x = x;
         this._y = y;
@@ -812,7 +918,9 @@
       results1 = [];
       for (letter in ref) {
         item = ref[letter];
-        display.drawText(0, row + 2, letter + ' - ' + item.describeA(true));
+        if (item) {
+          display.drawText(0, row + 2, letter + ' - ' + item.describeA(true));
+        }
         results1.push(row += 1);
       }
       return results1;
@@ -945,7 +1053,7 @@
         for (key in ref1) {
           listeners = ref1[key];
           listeners.sort(function(a, b) {
-            return a.priority - b.priority;
+            return b.priority - a.priority;
           });
         }
         if ("init" in mixin) {
@@ -1078,9 +1186,13 @@
     foreground: "white",
     background: "black",
     useEffect: function(target) {
-      if (target.hasMixin("Destructible")) {
-        return target.takeDamage(this, 41);
-      }
+      return target.raiseEvent("takeDamage", {
+        source: this,
+        damage: {
+          type: "focused",
+          amount: 41
+        }
+      });
     },
     mixins: [Game.Mixins.WalkoverEffectItem]
   });

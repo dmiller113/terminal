@@ -61,33 +61,41 @@ Game.Mixins.Inventory =
 Game.Mixins.PlayerPickup =
   name: "PlayerPickup"
   groupName: "Pickup"
-  pickup: (item) ->
-    # Testing
-    if @addToInventory(item)
-      @getMap().removeEntity(item)
+  listeners:
+    pickup:
+      priority: 15
+      func: (type, dict) ->
+        item = dict.item
+        if @addToInventory(item)
+          @getMap().removeEntity(item)
 
-    console.log(@inventorySlotsOpen())
-
+        console.log(@inventorySlotsOpen())
 
 # These are items that take effect immediately when the actors walk over them.
 Game.Mixins.WalkoverEffectItem =
   name: "WalkoverEffectItem"
   groupName: "Item"
+  listeners:
+    onWalkedOn:
+      priority: 50
+      func: (type, dict) ->
+        actor = dict.source
+        @_useEffect(actor, @)
+
   init: (template) ->
     @_useEffect = template.useEffect || (actor) -> return
-
-  walkedOver: (actor) ->
-    # We effect things when they walk over us
-    @_useEffect(actor, @)
 
 
 # These are items that picked up when the actors walk over them.
 Game.Mixins.WalkoverPickupItem =
   name: "WalkoverPickupItem"
   groupName: "Item"
+  listeners:
+    onWalkedOn:
+      priority: 50
+      func: (type, dict) ->
+        actor = dict.source
+        actor.raiseEvent('pickup', {item: @})
+
   init: (template) ->
     @_useEffect = template.useEffect || (actor) -> return
-
-  walkedOver: (actor) ->
-    if actor.hasMixin("Pickup")
-      actor.pickup(@)

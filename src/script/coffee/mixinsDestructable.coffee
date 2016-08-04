@@ -1,19 +1,53 @@
 Game.Mixins.FragileDestructible =
   name: "FragileDestructible"
   groupName: "Destructible"
+  listeners:
+    takeDamage:
+      priority: 25
+      func: (type, dict) ->
+        damage = dict.damage.amount
+        source = dict.source
+        @_hp -= damage
+        # If we have less than 0 hp than remove ourselves
+        if @_hp < 0
+          source.raiseEvent('onKill')
+          @raiseEvent('onDeath')
+    # Destructable handles removing the entity
+    onDeath:
+      priority: 25
+      func: (type, dict) ->
+        @getMap().removeEntity(@)
+
   init: () ->
     @_hp = 0
-
-  takeDamage: (actor, damage) ->
-    @_hp -= damage
-    # If we have less than 0 hp than remove ourselves
-    if @_hp < 0
-      @getMap().removeEntity(@)
 
 # Generic Destructible
 Game.Mixins.SimpleDestructible =
   name: "SimpleDestructible"
   groupName: "Destructible"
+  listeners:
+    takeDamage:
+      priority: 25
+      func: (type, dict) ->
+        damage = dict.damage.amount
+        source = dict.source
+
+        realDamage = Math.max(1, (damage - @_defValue))
+
+        @_hp -= realDamage
+        # If we have less than 0 hp than remove ourselves
+        if @_hp < 0
+          source.raiseEvent('onKill', {damage: damage, target: @})
+          @raiseEvent('onDeath', {source: source})
+
+    onDeath:
+      priority: 25
+      func: (type, dict) ->
+        # Currently killing the player causes a massive problem with the Scheduler
+        # Don't kill the player yet.
+        if !@hasMixin("PlayerActor")
+          @getMap().removeEntity(@)
+
   init: (template) ->
     # Defaults to 10hp, but takes it from the template
     @_maxHp = template['maxHp'] || 10
@@ -30,21 +64,3 @@ Game.Mixins.SimpleDestructible =
 
   getDef: ->
     @_defValue
-
-  takeDamage: (actor, damage) ->
-    realDamage = Math.max(1, (damage - @_defValue))
-    if @hasMixin("MessageRecipient")
-      Game.sendMessage(@, Game.Messages.damageMessage,
-        [actor.describeA(true), realDamage])
-
-    @_hp -= realDamage
-    # If we have less than 0 hp than remove ourselves
-    if @_hp < 0
-      if @hasMixin("MessageRecipient") and @hasMixin("PlayerActor")
-        Game.sendMessage(@, Game.Messages.dieMessage)
-      else if actor.hasMixin("MessageRecipient")
-          Game.sendMessage(actor, Game.Messages.killMessage, [actor.describeA(True), @describeA()])
-      # Currently killing the player causes a massive problem with the Scheduler
-      # Don't kill the player yet.
-      if !@hasMixin("PlayerActor")
-        @getMap().removeEntity(@)

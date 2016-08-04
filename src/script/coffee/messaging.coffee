@@ -1,6 +1,13 @@
 Game.Messages = {}
 
+Game.parseMessage = (message, args) ->
+  if args
+    message = vsprintf(message, args)
+  message
+
+# Depreciated. Use events.
 Game.sendMessage = (recipient, message, args) ->
+  console.warn("Depreciated. Use events.")
   if recipient.hasMixin("MessageRecipient")
     if args
       message = vsprintf(message, args)

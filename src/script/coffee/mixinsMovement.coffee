@@ -2,11 +2,6 @@
 Game.Mixins.Movable = {
   name: "Movable",
   groupName: "Movable",
-  listeners:
-    onMove:
-      priority: 100
-      func: (args) ->
-        console.log("we moved")
 
   tryMove: (x, y, map) ->
     tile = map.getTile(x, y)
@@ -17,8 +12,8 @@ Game.Mixins.Movable = {
     else if target._blocksMovement
       return false
     else if tile.isWalkable()
-      if target and target.hasMixin("Item")
-        target.walkedOver(@)
+      if target
+        target.raiseEvent("onWalkedOn", {source: @})
       @_x = x
       @_y = y
       return true
