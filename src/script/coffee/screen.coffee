@@ -94,6 +94,13 @@ Game.Screen.playScreen =
           glyph = @_map.getTile(x,y)
           display.draw(x - topLeftX, y - topLeftY, glyph.getChar(),
             glyph.getForeground(), glyph.getBackground())
+        else
+          num = Math.floor(Math.random() * 4)
+          block = 0x2590
+          if num == 0
+            block = 0x2588
+          display.draw(x - topLeftX, y - topLeftY,
+            String.fromCodePoint(block + num), "#131313", "black")
 
     player = null
 
@@ -108,6 +115,7 @@ Game.Screen.playScreen =
         else
           display.draw(pos.x - topLeftX, pos.y - topLeftY, entity.getChar(),
             entity.getForeground(), entity.getBackground())
+
 
     # Draw the player last
     pos = player.getXY()
@@ -142,6 +150,7 @@ Game.Screen.playScreen =
       @_subscreen.handleInput(eventType, event)
       return
     if eventType == "keydown"
+      newTurn = false
       switch event.keyCode
         when ROT.VK_RETURN
           Game.switchScreen(Game.Screen.winScreen)
@@ -151,12 +160,16 @@ Game.Screen.playScreen =
           Game.switchScreen(Game.Screen.playScreen)
         # Movement
         when ROT.VK_LEFT
+          newTurn = true
           @move(-1, 0)
         when ROT.VK_RIGHT
+          newTurn = true
           @move(1, 0)
         when ROT.VK_UP
+          newTurn = true
           @move(0, -1);
         when ROT.VK_DOWN
+          newTurn = true
           @move(0, 1);
         # Inventory
         when ROT.VK_I
@@ -169,7 +182,8 @@ Game.Screen.playScreen =
             Game.Screen.InventoryScreen.setup(@_player, @_player.getItems());
             @setSubScreen(Game.Screen.InventoryScreen);
           return;
-      @_map.getEngine().unlock()
+      if newTurn
+        @_map.getEngine().unlock()
 
 Game.Screen.winScreen =
   enter: ->
