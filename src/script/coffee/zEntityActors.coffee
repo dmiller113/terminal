@@ -6,10 +6,11 @@ Game.playerTemplate = {
   atkValue: 10,
   maxHp: 40,
   itemSlots: 26,
+  sightRadius: 8,
   mixins: [Game.Mixins.Movable, Game.Mixins.PlayerActor,
     Game.Mixins.SimpleAttacker, Game.Mixins.MessageRecipient,
     Game.Mixins.SimpleDestructible, Game.Mixins.Inventory,
-    Game.Mixins.PlayerPickup,],
+    Game.Mixins.PlayerPickup, Game.Mixins.Sight],
 }
 
 Game.EntityRepository = new Repository('entities', Entity)

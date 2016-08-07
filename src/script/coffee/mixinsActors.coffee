@@ -40,3 +40,12 @@ Game.Mixins.Wander = {
     if @getMap().isEmptyFloor(xCoord, yCoord)
       @setXY(xCoord, yCoord)
 }
+
+Game.Mixins.Sight = {
+  name: "Sight",
+  groupName: "Sight",
+  init: (template) ->
+    @_sightRadius = template['sightRadius'] || 5
+  getSightRadius: () ->
+    @_sightRadius
+}

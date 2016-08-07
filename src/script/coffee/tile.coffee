@@ -4,6 +4,7 @@ class Tile extends Glyph
     super(options)
     @_isWalkable = options.isWalkable || false
     @_isDiggable = options.isDiggable || false
+    @_blocksLight = options.blocksLight || false
 
   isWalkable: ->
     @_isWalkable
@@ -11,6 +12,8 @@ class Tile extends Glyph
   isDiggable: ->
     @_isDiggable
 
+  blocksLight: ->
+    @_blocksLight
 
 Game.Tile = Tile
 
@@ -21,6 +24,7 @@ Game.Tile.wallTile = new Game.Tile({
   symbol: '#',
   foreground: 'goldenrod',
   isDiggable: true,
+  blocksLight: true,
 })
 
 Game.Tile.floorTile = new Game.Tile({

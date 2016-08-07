@@ -14,6 +14,14 @@ class Map
     @_width = tiles.length
     @_height = tiles[0].length
 
+
+    # FoV
+    map = this
+    blocksLight = (x, y) ->
+      !(map.getTile(x, y).blocksLight())
+
+    @_fov = new ROT.FOV.DiscreteShadowcasting(blocksLight, {topology: 4})
+
     # Add the player
     if typeof player != undefined
       @addEntityAtRandomPosition(player)
@@ -77,6 +85,8 @@ class Map
 
     # Return results
     results
+
+  getFoV: () -> @_fov
 
   isEmptyFloor: (x, y) ->
     @getTile(x, y) == Game.Tile.floorTile and !@getEntityAt(x, y)

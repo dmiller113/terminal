@@ -78,19 +78,30 @@ Game.Screen.playScreen =
     # Make sure we still have enough space to fit an entire game screen
     topLeftY = Math.min(topLeftY, @_map.getHeight() - screenHeight);
 
+    # Compute FoV
+    visibleFoV = {}
+
+    callback = (x, y, radius, visibility) ->
+      visibleFoV["#{x},#{y}"] = true
+
+    @_player.getMap().getFoV().compute(@_player.getX(), @_player.getY(),
+      @_player.getSightRadius(), callback)
+
     # Render the map to the display
     for x in [topLeftX..(topLeftX + screenWidth)]
       for y in [topLeftY..(topLeftY + screenHeight)]
-        glyph = @_map.getTile(x,y)
-        display.draw(x - topLeftX, y - topLeftY, glyph.getChar(),
-          glyph.getForeground(), glyph.getBackground())
+        if visibleFoV["#{x},#{y}"]
+          glyph = @_map.getTile(x,y)
+          display.draw(x - topLeftX, y - topLeftY, glyph.getChar(),
+            glyph.getForeground(), glyph.getBackground())
 
     player = null
 
     for entity in @_map.getEntities()
       pos = entity.getXY()
       if (pos.x >= topLeftX && pos.x < (topLeftX + screenWidth) &&
-          pos.y >= topLeftY && pos.y < (topLeftY + screenHeight))
+          pos.y >= topLeftY && pos.y < (topLeftY + screenHeight) &&
+          visibleFoV["#{pos.x},#{pos.y}"])
 
         if entity.hasMixin("PlayerActor")
           player = entity
