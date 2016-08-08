@@ -5,13 +5,14 @@ MVP Specs
 - Boss on Second Floor
 - Three Different Bosses, 2 by chance, and 1 by Dungeon Triggers
 - 3 different starting ability/stat packages (Bumper, ranged, foomer/AoE)
-- 6 Ability slots:
-  - Bump,
-  - Ranged Attack,
-  - 100% attack, 0% utility
-  - 80% attack, 80% utility
-  - 0% attack, 100% utility
-  - 150% attack, 150% utility (Ultimate, Requires a resource)
+- 5 Ability slots:
+  - Bump (100% attack, 100% utility),
+  - Ranged Attack (100% attack, 100% utility),
+  - 200% attack, 0% utility
+  - 100% attack, 80% utility
+  - 80% attack, 100% utility
+  - 0% attack, 200% utility
+- Successful uses of abilities gain Focus. At 100 Focus, an ability can be used at an upgraded capactiy, with 150% attack, 150% utility (Ultimate, Requires a resource)
 - 4 Stats:
   - Hardening: Mitigates nonFocused damage.
   - Scanning: Extends the range that you passively scan, and sight range. Weights random ranges of abilities toward the higher end of the ranges.
