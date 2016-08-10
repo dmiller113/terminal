@@ -89,7 +89,7 @@ Game.Screen.playScreen =
 
     # Render the map to the display
     for x in [topLeftX..(topLeftX + screenWidth)]
-      for y in [topLeftY..(topLeftY + screenHeight)]
+      for y in [topLeftY...(topLeftY + screenHeight)]
         if visibleFoV["#{x},#{y}"]
           glyph = @_map.getTile(x,y)
           display.draw(x - topLeftX, y - topLeftY, glyph.getChar(),
