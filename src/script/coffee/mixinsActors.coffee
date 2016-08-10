@@ -49,3 +49,63 @@ Game.Mixins.Sight = {
   getSightRadius: () ->
     @_sightRadius
 }
+
+Game.Mixins.Attributes = if Game.Mixins.Attributes? then Game.Mixins.Attributes else {}
+Game.Mixins.Attributes.Hardening = {
+  name: "AttributeHardening",
+  groupName: "Attribute",
+  listeners:
+    takeDamage:
+      priority: 50
+      func: (type, dict) ->
+        # Hardening reduces nonFocused Damage, 1:1
+        damage = dict.damage.amount
+        type = dict.damage.type
+        if type != 'focused'
+          damage = Math.max(damage - @getHardening(), 0)
+        dict.damage.amount = damage
+
+  init: (template) ->
+    if @_attributes == undefined
+      @_attributes = {}
+    @_attributes.hardening = template['hardening'] || 1
+  getHardening: () ->
+    if @_attributes?
+      @_attributes.hardening
+}
+
+Game.Mixins.Attributes.Offense = {
+  name: "AttributeOffense",
+  groupName: "Attribute",
+  init: (template) ->
+    if @_attributes == undefined
+      @_attributes = {}
+    @_attributes.offense = template['offense'] || 1
+  getHardening: () ->
+    if @_attributes?
+      @_attributes.offense
+}
+
+Game.Mixins.Attributes.Scan = {
+  name: "AttributeScan",
+  groupName: "Attribute",
+  init: (template) ->
+    if @_attributes == undefined
+      @_attributes = {}
+    @_attributes.scan = template['scan'] || 1
+  getHardening: () ->
+    if @_attributes?
+      @_attributes.scan
+}
+
+Game.Mixins.Attributes.Stealth = {
+  name: "AttributeStealth",
+  groupName: "Attribute",
+  init: (template) ->
+    if @_attributes == undefined
+      @_attributes = {}
+    @_attributes.stealth = template['stealth'] || 1
+  getHardening: () ->
+    if @_attributes?
+      @_attributes.stealth
+}

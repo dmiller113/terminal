@@ -4,7 +4,7 @@ Game.Mixins = {}
 Game.Mixins.MessageRecipient =
   name: "MessageRecipient"
   listeners:
-    onAttacking:
+    deltDamage:
       priority: 15
       func: (type, dict) ->
         target = dict.target
@@ -13,7 +13,7 @@ Game.Mixins.MessageRecipient =
           [@describeA(true), target.describeA(false), damage]))
 
     takeDamage:
-      priority: 15
+      priority: 10
       func: (type, dict) ->
         damage = dict.damage.amount
         @recieveMessage(Game.parseMessage(Game.Messages.damageMessage,

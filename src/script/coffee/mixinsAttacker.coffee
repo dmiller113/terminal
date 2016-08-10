@@ -19,6 +19,7 @@ Game.Mixins.SimpleAttacker =
       @raiseEvent('onAttacking', {damage: damage, target: target})
       target.raiseEvent('onAttack', {damage: damage, source: @})
       target.raiseEvent('takeDamage', {damage: damage, source: @})
+      @raiseEvent('deltDamage', {damage: damage, target: target})
       true
     else
       false
