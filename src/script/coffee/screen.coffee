@@ -239,6 +239,31 @@ Game.Screen.playScreen =
     for prop, title of constants._titles
       display.drawText(title.x, title.y, "%c{lime}-" + title.title + "-%c{}")
 
+    # Draw Ability Markers
+    for ability, i in ["C", "R", "1", "2", "3", "4"]
+      display.drawText(constants._statusRow + 2, constants._abilityCol + i,
+        "%c{lime}" + ability + ": Foo%c{}")
+
+    # Draw HP values
+    stats = vsprintf('Structure: %d/%d', [@_player.getHp(), @_player.getMaxHp()])
+    display.drawText(constants._statusRow + 2, constants._hpFocusCol, "%c{lime}" + stats + "%c{}")
+    display.drawText(constants._statusRow + 6, constants._hpFocusCol + 1,
+      "%c{lime}Focus: 66% %c{}")
+
+    # Player Name
+    display.drawText(constants._statusRow + 2, constants._nameCol,
+      "%c{lime}" + @_player.getName() + "%c{}")
+
+    # Player Stats
+    stats = {}
+    @_player.raiseEvent("getStats", {stats: stats})
+    i = 0
+    for stat, value of stats
+      x = if i > 1 then constants._statusRow + 2 else constants._statusRow + 13
+      display.drawText(x, constants._statCol + (i % 2),
+        "%c{lime}" + stat + ": " + value + "%c{}")
+      i++
+
 Game.Screen.winScreen =
   enter: ->
     console.log("Entered winScreen")

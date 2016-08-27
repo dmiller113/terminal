@@ -76,7 +76,7 @@ class Entity extends Glyph
     @_map = map
 
   getName: () ->
-    @_name
+    @name
 
   getX: () ->
     @_x
