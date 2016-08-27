@@ -1,15 +1,58 @@
+Version = 0.01
 Game =
   _display: null
   _currentScreen: null
-  _screenHeight: 31
-  _screenWidth: 80
-  _messageHeight: 6
-  _statusHeight: 1
+  _constants:
+    _screenHeight: 34
+    _screenWidth: 82
+    _messageHeight: 5
+    _statusHeight: 16
+    _statusRow: 51
+    _locationHeight: 2
+    _analysisHeight: 1
+    _inViewHeight: 4
+    _nameCol: 1
+    _statCol: 4
+    _hpFocusCol: 7
+    _abilityCol: 10
+    _networkCol: 18
+    _nodeCol: 19
+    _analysisCol: 21
+    _inViewCol: 23
+    _messageCol: 28
+    _screenMapCol: 1
+    _screenMapRow: 1
+    _screenMapHeight: 26
+    _screenMapWidth: 50
+    _statusTitleCol: 61
+    _messageTitleCol: 37
+    _titles:
+      game:
+        title: "Terminal [#{Version}]"
+        x: 2
+        y: 0
+      messages:
+        title: 'Messages'
+        x: 2
+        y: 27
+      location:
+        title: 'Location'
+        x: 53
+        y: 17
+      inView:
+        title: 'In View'
+        x: 53
+        y: 22
+      analysis:
+        title: 'Analysis'
+        x: 53
+        y: 20
+
   init: ->
     # initialize the things
     @_display = new ROT.Display
-      width: @_screenWidth
-      height: @_screenHeight
+      width: @getWidth()
+      height: @getHeight()
 
     # don't lose this.
     game = @
@@ -31,16 +74,25 @@ Game =
     @_display
 
   getWidth: ->
-    @_screenWidth
+    @_constants._screenWidth
 
   getHeight: ->
-    @_screenHeight - @_messageHeight - @_statusHeight
+    (@_constants._screenHeight)
+
+  getScreenWidth: ->
+    @_constants._screenMapWidth
+
+  getScreenHeight: ->
+    @_constants._screenMapHeight
 
   getMessageHeight: ->
-    @_messageHeight
+    @_constants._messageHeight
 
   getStatusHeight: ->
-    @_statusHeight
+    @_constants._statusHeight
+
+  getConstants: ->
+    @_constants
 
   refresh: () ->
     if @_display != null and @_currentScreen != null

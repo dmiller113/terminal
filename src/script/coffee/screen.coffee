@@ -64,8 +64,12 @@ Game.Screen.playScreen =
       return
 
     # Figure out where our top left cell should be
-    screenWidth = Game.getWidth()
-    screenHeight = Game.getHeight()
+    screenWidth = Game.getScreenWidth()
+    screenHeight = Game.getScreenHeight()
+    mapInsetX = Game.getConstants()._screenMapCol
+    mapInsetY = Game.getConstants()._screenMapRow
+    constants = Game.getConstants()
+
     # Make sure the x-axis doesn't go to the left of the left bound
     topLeftX = Math.max(0, @_player.getX() - (screenWidth / 2));
 
@@ -87,23 +91,29 @@ Game.Screen.playScreen =
     @_player.getMap().getFoV().compute(@_player.getX(), @_player.getY(),
       @_player.getSightRadius(), callback)
 
+    @_drawUILines(display, constants)
+
     # Render the map to the display
-    for x in [topLeftX..(topLeftX + screenWidth)]
-      for y in [topLeftY...(topLeftY + screenHeight)]
+    for x in [topLeftX..(topLeftX + screenWidth - 1)]
+      for y in [topLeftY..(topLeftY + screenHeight - 1)]
         if visibleFoV["#{x},#{y}"]
           glyph = @_map.getTile(x,y)
-          display.draw(x - topLeftX, y - topLeftY, glyph.getChar(),
-            glyph.getForeground(), glyph.getBackground())
+          display.draw(mapInsetX + x - topLeftX,
+                       mapInsetY + y - topLeftY,
+                       glyph.getChar(), glyph.getForeground(),
+                       glyph.getBackground())
         else
           num = Math.floor(Math.random() * 4)
           block = 0x2590
           if num == 0
             block = 0x2588
-          display.draw(x - topLeftX, y - topLeftY,
+          display.draw(
+            mapInsetX + x - topLeftX, mapInsetY + y - topLeftY,
             String.fromCodePoint(block + num), "#131313", "black")
 
     player = null
 
+    # Render entities to the screen
     for entity in @_map.getEntities()
       pos = entity.getXY()
       if (pos.x >= topLeftX && pos.x < (topLeftX + screenWidth) &&
@@ -113,27 +123,29 @@ Game.Screen.playScreen =
         if entity.hasMixin("PlayerActor")
           player = entity
         else
-          display.draw(pos.x - topLeftX, pos.y - topLeftY, entity.getChar(),
-            entity.getForeground(), entity.getBackground())
+          display.draw(
+            mapInsetX + pos.x - topLeftX, mapInsetY + pos.y - topLeftY,
+            entity.getChar(), entity.getForeground(), entity.getBackground())
 
 
     # Draw the player last
     pos = player.getXY()
-    display.draw(pos.x - topLeftX, pos.y - topLeftY, player.getChar(),
-      player.getForeground(), player.getBackground())
+    display.draw(
+      mapInsetX + pos.x - topLeftX, mapInsetY + pos.y - topLeftY,
+      player.getChar(), player.getForeground(), player.getBackground())
 
     # Draw status
-    stats = '%c{white}%b{black}'
-    stats += vsprintf('HP: %d/%d', [@_player.getHp(), @_player.getMaxHp()])
-    stats += vsprintf(' Atk: %d Def: %d', [@_player.getAttack(),
-      @_player.getDef()])
-    display.drawText(0, screenHeight + 1, stats)
+    # stats = '%c{white}%b{black}'
+    # stats += vsprintf('HP: %d/%d', [@_player.getHp(), @_player.getMaxHp()])
+    # stats += vsprintf(' Atk: %d Def: %d', [@_player.getAttack(),
+    #   @_player.getDef()])
+    # display.drawText(0, screenHeight + 1, stats)
 
     # Draw messages
     messageY = screenHeight + 2
     for message in @_player.getMessages()
       messageY += display.drawText(
-        0, messageY, '%c{white}%b{black}' + message
+        1, messageY, '%c{lawngreen}%b{black}' + message
       )
 
   move: (cx, cy) ->
@@ -184,6 +196,48 @@ Game.Screen.playScreen =
           return;
       if newTurn
         @_map.getEngine().unlock()
+
+  _drawUILines: (display, constants) ->
+    # Draw UI lines
+    for y in [0...Game.getHeight()]
+      for x in [0...Game.getWidth()]
+        char = ""
+        # Corners
+        if x == 0 and y == 0
+          char = String.fromCharCode(0x2554)
+        else if (x == 0 and y == Game.getHeight()-1)
+          char = String.fromCharCode(0x255A)
+        else if (x == Game.getWidth() - 1 and y == Game.getHeight() - 1)
+          char = String.fromCharCode(0x255D)
+        else if x == Game.getWidth() - 1 and y == 0
+          char = String.fromCharCode(0x2557)
+        # Intersections
+        else if (x == constants._statusRow and y == 0 or
+            x == 0 and y == constants._messageCol-1) or
+            ((x == constants._statusRow or
+              x == Game.getWidth() - 1) and (
+             y == constants._networkCol - 1 or
+             y == constants._analysisCol - 1 or
+             y == constants._inViewCol - 1 or
+             y == constants._messageCol - 1
+            ))
+          char = String.fromCharCode(0x23E3)
+        # Horizontal Lines
+        else if y == 0 or y == constants._messageCol - 1 or
+          y == Game.getHeight() - 1 or (x > constants._statusRow and
+                                       (y == constants._networkCol - 1 or
+                                        y == constants._analysisCol - 1 or
+                                        y == constants._inViewCol - 1))
+          char = String.fromCharCode(0x2550)
+        # Vertical Lines
+        else if x == 0 or (x == constants._statusRow and y < constants._messageCol) or
+                           x == Game.getWidth() - 1
+          char = String.fromCharCode(0x2551)
+        display.draw(x, y, char, "lime", "black")
+
+    # Draw titles
+    for prop, title of constants._titles
+      display.drawText(title.x, title.y, "%c{lime}-" + title.title + "-%c{}")
 
 Game.Screen.winScreen =
   enter: ->
