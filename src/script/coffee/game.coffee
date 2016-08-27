@@ -53,6 +53,7 @@ Game =
     @_display = new ROT.Display
       width: @getWidth()
       height: @getHeight()
+      spacing: 1.05
 
     # don't lose this.
     game = @
