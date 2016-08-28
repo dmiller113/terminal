@@ -69,6 +69,8 @@ Game.Screen.playScreen =
     mapInsetX = Game.getConstants()._screenMapCol
     mapInsetY = Game.getConstants()._screenMapRow
     constants = Game.getConstants()
+    stats = {}
+    @_player.raiseEvent("getStats", {stats: stats})
 
     # Make sure the x-axis doesn't go to the left of the left bound
     topLeftX = Math.max(0, @_player.getX() - (screenWidth / 2));
@@ -91,7 +93,7 @@ Game.Screen.playScreen =
     @_player.getMap().getFoV().compute(@_player.getX(), @_player.getY(),
       @_player.getSightRadius(), callback)
 
-    @_drawUILines(display, constants)
+    @_drawUILines(display, constants, stats)
 
     # Render the map to the display
     for x in [topLeftX..(topLeftX + screenWidth - 1)]
@@ -113,6 +115,7 @@ Game.Screen.playScreen =
 
     player = null
 
+    inView = {}
     # Render entities to the screen
     for entity in @_map.getEntities()
       pos = entity.getXY()
@@ -127,6 +130,34 @@ Game.Screen.playScreen =
             mapInsetX + pos.x - topLeftX, mapInsetY + pos.y - topLeftY,
             entity.getChar(), entity.getForeground(), entity.getBackground())
 
+          # Append to the list of actors in view of the player
+          if entity.name of inView
+            inView[entity.name].number += 1
+          else
+            inView[entity.name] = {
+              number: 1
+              symbol: entity.getChar()
+              color: entity.getForeground()
+            }
+
+    # Draw the enemies in View
+    i = 0
+    sortFunction = (item1, item2) ->
+      if item1 < item2
+        return -1
+      if item1 <= item2
+        return 0
+      return 1
+
+    inViewKeys = Object.keys(inView)
+    for key in inViewKeys.sort(sortFunction)
+      display.drawText(constants._statusRow + 2, constants._inViewCol + i,
+        "%c{#{inView[key].color}}" + inView[key].number + " " + key + "%c{}")
+      i++
+    # Nothing in view, add an empty message
+    if inViewKeys.length == 0
+      display.drawText(constants._statusRow + 2, constants._inViewCol,
+        "%c{lime} Nothing in view...%c{}")
 
     # Draw the player last
     pos = player.getXY()
@@ -197,7 +228,7 @@ Game.Screen.playScreen =
       if newTurn
         @_map.getEngine().unlock()
 
-  _drawUILines: (display, constants) ->
+  _drawUILines: (display, constants, stats) ->
     # Draw UI lines
     for y in [0...Game.getHeight()]
       for x in [0...Game.getWidth()]
@@ -245,8 +276,8 @@ Game.Screen.playScreen =
         "%c{lime}" + ability + ": Foo%c{}")
 
     # Draw HP values
-    stats = vsprintf('Structure: %d/%d', [@_player.getHp(), @_player.getMaxHp()])
-    display.drawText(constants._statusRow + 2, constants._hpFocusCol, "%c{lime}" + stats + "%c{}")
+    statsText = vsprintf('Structure: %d/%d', [@_player.getHp(), @_player.getMaxHp()])
+    display.drawText(constants._statusRow + 2, constants._hpFocusCol, "%c{lime}" + statsText + "%c{}")
     display.drawText(constants._statusRow + 6, constants._hpFocusCol + 1,
       "%c{lime}Focus: 66% %c{}")
 
@@ -254,9 +285,8 @@ Game.Screen.playScreen =
     display.drawText(constants._statusRow + 2, constants._nameCol,
       "%c{lime}" + @_player.getName() + "%c{}")
 
+    console.log(stats)
     # Player Stats
-    stats = {}
-    @_player.raiseEvent("getStats", {stats: stats})
     i = 0
     for stat, value of stats
       x = if i > 1 then constants._statusRow + 2 else constants._statusRow + 13
