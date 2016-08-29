@@ -12,7 +12,7 @@ MVP Specs
   - 100% attack, 80% utility
   - 80% attack, 100% utility
   - 0% attack, 200% utility
-- Successful uses of abilities gain Focus. At 100 Focus, an ability can be used at an upgraded capactiy, with 150% attack, 150% utility (Ultimate, Requires a resource)
+- Successful uses of abilities gain Focus. At 100 Focus, an ability can be used at an upgraded capactiy, with 250% attack, 250% utility (Ultimate, Requires a resource)
 - 4 Stats:
   - Hardening: Mitigates nonFocused damage.
   - Scanning: Extends the range that you passively scan, and sight range. Weights random ranges of abilities toward the higher end of the ranges.

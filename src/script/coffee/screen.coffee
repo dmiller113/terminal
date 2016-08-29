@@ -149,9 +149,22 @@ Game.Screen.playScreen =
         return 0
       return 1
 
-    inViewKeys = Object.keys(inView)
-    for key in inViewKeys.sort(sortFunction)
-      display.drawText(constants._statusRow + 2, constants._inViewCol + i,
+    inViewKeys = Object.keys(inView).sort(sortFunction)
+
+    # Contain list to 8 objects
+    if inViewKeys.length > 8
+      inViewKeys = inViewKeys[...8]
+      display.drawText(constants._statusRow + 2, constants._inViewCol + 7,
+        "And more...")
+
+    for key in inViewKeys
+      # Handle the seperation
+      additionalCol = 2
+      additionalRow = if i < 4 then i else i - 4
+      if i > 3
+        additionalCol += 4 + inViewKeys[i-4].length
+      display.drawText(
+        constants._statusRow + additionalCol, constants._inViewCol + additionalRow,
         "%c{#{inView[key].color}}" + inView[key].number + " " + key + "%c{}")
       i++
     # Nothing in view, add an empty message
@@ -285,7 +298,6 @@ Game.Screen.playScreen =
     display.drawText(constants._statusRow + 2, constants._nameCol,
       "%c{lime}" + @_player.getName() + "%c{}")
 
-    console.log(stats)
     # Player Stats
     i = 0
     for stat, value of stats

@@ -58,6 +58,34 @@ Game.Mixins.Inventory =
         @_map.addEntity(@_inventory[letter])
         @removeFromInventory(letter)
 
+
+Game.Mixins.ActiveMemory =
+  listeners:
+    hasMemory:
+      priority: 50
+      # Dict should be an Object.
+      func: (type, dict) ->
+        result = {usedMemory: 0}
+        @raiseEvent("checkMemory", result)
+        dict.hasMemory = result.usedMemory < @_maxMemory
+
+  init: (template) ->
+    # Ten MEM max by default, overridable by template
+    @_maxMemory = template.maxMemory || 10
+
+Game.Mixins.ConsumesMemory =
+  listeners:
+    checkMemory:
+      priority: 50
+      # Dict should be an object with a key of usedMemory
+      func: (type, dict) ->
+        totalMemory = dict.usedMemory || 0
+        dict.usedMemory = totalMemory + @_consumedMemory
+
+  init: (template) ->
+    # How much MEM does this ability take. Default 1.
+    @_consumedMemory = template.memory || 1
+
 Game.Mixins.PlayerPickup =
   name: "PlayerPickup"
   groupName: "Pickup"
