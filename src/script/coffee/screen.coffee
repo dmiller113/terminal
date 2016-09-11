@@ -95,6 +95,8 @@ Game.Screen.playScreen =
 
     @_drawUILines(display, constants, stats)
 
+    @_fillUI(display, constants, stats)
+
     # Render the map to the display
     for x in [topLeftX..(topLeftX + screenWidth - 1)]
       for y in [topLeftY..(topLeftY + screenHeight - 1)]
@@ -216,17 +218,13 @@ Game.Screen.playScreen =
           Game.switchScreen(Game.Screen.playScreen)
         # Movement
         when ROT.VK_LEFT
-          newTurn = true
-          @move(-1, 0)
+          newTurn = @move(-1, 0)
         when ROT.VK_RIGHT
-          newTurn = true
-          @move(1, 0)
+          newTurn = @move(1, 0)
         when ROT.VK_UP
-          newTurn = true
-          @move(0, -1);
+          newTurn = @move(0, -1)
         when ROT.VK_DOWN
-          newTurn = true
-          @move(0, 1);
+          newTurn = @move(0, 1)
         # Inventory
         when ROT.VK_I
           if (item for letter, item of @_player.getItems()).filter((x) -> return x).length == 0
@@ -283,10 +281,16 @@ Game.Screen.playScreen =
     for prop, title of constants._titles
       display.drawText(title.x, title.y, "%c{lime}-" + title.title + "-%c{}")
 
+  _fillUI: (display, constants, stats) ->
     # Draw Ability Markers
-    for ability, i in ["C", "R", "1", "2", "3", "4"]
+    activeMemory = {}
+    @_player.raiseEvent("getAbilities", activeMemory)
+
+    i = 0
+    for ability, value of activeMemory.abilities
       display.drawText(constants._statusRow + 2, constants._abilityCol + i,
-        "%c{lime}" + ability + ": Foo%c{}")
+        "%c{lime}" + ability + ": #{value.name}%c{}")
+      i++
 
     # Draw HP values
     statsText = vsprintf('Structure: %d/%d', [@_player.getHp(), @_player.getMaxHp()])

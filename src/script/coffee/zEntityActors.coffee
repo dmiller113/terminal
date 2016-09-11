@@ -10,8 +10,16 @@ Game.playerTemplate = {
   offense: 3,
   hardening: 3,
   stealth: 3,
+  abilities: {
+    C: Game.AbilityRepository.create("protobump")
+    R: null
+    "1": null
+    "2": null
+    "3": null
+    "4": null
+  }
   mixins: [Game.Mixins.Movable, Game.Mixins.PlayerActor,
-    Game.Mixins.SimpleAttacker, Game.Mixins.MessageRecipient,
+    Game.Mixins.Abilities.SimpleAbilityUser, Game.Mixins.MessageRecipient,
     Game.Mixins.SimpleDestructible, Game.Mixins.Sight, Game.Mixins.Attributes.Scan,
     Game.Mixins.Attributes.Hardening, Game.Mixins.Attributes.Offense,
     Game.Mixins.Attributes.Stealth, Game.Mixins.ActiveMemory],

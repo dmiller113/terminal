@@ -7,8 +7,11 @@ Game.Mixins.Movable = {
     tile = map.getTile(x, y)
     target = map.getEntityAt(x, y)
 
-    if target and @hasMixin("Attacker") and target.hasMixin("Destructible")
-      return @attack(target)
+    if target and target.hasMixin("Destructible")
+      stats = {}
+      @raiseEvent("getStats", {stats: stats})
+      @raiseEvent("useContact", {target: target, stats: stats})
+      return true
     else if target._blocksMovement
       return false
     else if tile.isWalkable()

@@ -135,3 +135,23 @@ Game.Mixins.Attributes.Stealth = {
     if @_attributes?
       @_attributes.stealth
 }
+
+# Ability mixins.
+Game.Mixins.Abilities = {}
+Game.Mixins.Abilities.SimpleAbilityUser =
+  name: "AbilityUserSimple"
+  groupName: "AbilityUser"
+  listeners:
+    useContact:
+      priority: 25
+      # Dict should contain .target with the target of the ability and .stats
+      # with the user's stats.
+      func: (type, dict) ->
+        activeMemory = {}
+        @raiseEvent("getAbilities", activeMemory)
+        if "C" of activeMemory.abilities
+          activeMemory.abilities.C.raiseEvent("useEffect", {
+            target: dict.target,
+            origin: @,
+            stats: dict.stats,
+          })
