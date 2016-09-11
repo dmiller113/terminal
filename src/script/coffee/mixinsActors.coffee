@@ -149,7 +149,7 @@ Game.Mixins.Abilities.SimpleAbilityUser =
       func: (type, dict) ->
         activeMemory = {}
         @raiseEvent("getAbilities", activeMemory)
-        if "C" of activeMemory.abilities
+        if "C" of activeMemory.abilities and "raiseEvent" of activeMemory.abilities.C
           activeMemory.abilities.C.raiseEvent("useEffect", {
             target: dict.target,
             origin: @,
