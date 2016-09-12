@@ -39,5 +39,8 @@ Game.EntityRepository.define({
   name: "Goblin",
   symbol: "G",
   foreground: "MediumSeaGreen",
-  mixins: [Game.Mixins.Wander, Game.Mixins.FragileDestructible]
+  maxHp: 20
+  hardening: 20
+  mixins: [Game.Mixins.Wander, Game.Mixins.SimpleDestructible,
+           Game.Mixins.Attributes.Hardening]
 })

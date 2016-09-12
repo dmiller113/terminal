@@ -27,3 +27,6 @@ Game.Messages.dieMessage = "You die."
 
 # Full inventory
 Game.Messages.FullInventory = "Your inventory is full."
+
+# No damage delt
+Game.Messages.noDamage = "%s attacks %s for no damage!"

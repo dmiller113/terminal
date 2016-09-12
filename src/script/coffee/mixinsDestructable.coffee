@@ -32,9 +32,7 @@ Game.Mixins.SimpleDestructible =
         damage = dict.damage.amount
         source = dict.source
 
-        realDamage = Math.max(1, (damage - @_defValue))
-
-        @_hp -= realDamage
+        @_hp -= damage
         # If we have less than 0 hp than remove ourselves
         if @_hp < 0
           source.raiseEvent('onKill', {damage: damage, target: @})
