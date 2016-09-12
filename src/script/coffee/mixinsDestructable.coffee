@@ -37,7 +37,7 @@ Game.Mixins.SimpleDestructible =
       priority: 25
       func: (type, dict) ->
         percent = dict.percent
-        rawHeal = Math.floor(@_maxHp * percent) + @_hp
+        rawHeal = Math.floor(@_maxHp * (percent/100))
         dict.amount = rawHeal
         @raiseEvent("healDamage", dict)
 
