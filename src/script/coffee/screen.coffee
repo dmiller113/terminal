@@ -36,7 +36,7 @@ Game.Screen.playScreen =
     # Set up map. Empty map to begin with.
     map = [];
     # Ugly list comprehenions
-    map.push(Game.Tile.nullTile for y in [0..(@_mapHeight - 1)]) for num in [0..(@_mapWidth - 1)]
+    map.push(Game.Tile.nullTile for y in [0...@_mapHeight]) for num in [0...@_mapWidth]
     # Set up map generator from ROT
     generator = new ROT.Map.Cellular(@_mapWidth, @_mapHeight)
     generator.randomize(0.5)
