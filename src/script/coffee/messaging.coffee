@@ -35,7 +35,7 @@ Game.Messages.noDamage = "%s attacks %s for no damage!"
 Game.Messages.healDamage = "%s heals %d Structure!"
 
 # Stepping on an onWalkItem
-Game.Messages.walkoverItem = "%s steps on %s."
+Game.Messages.walkoverItem = "%s interfaces with %s."
 
 # Testing long messages
 Game.Messages.longMessage = "Bacon ipsum dolor amet shoulder landjaeger pancetta chicken turkey ham hock, shankle short ribs corned beef rump ham jerky sirloin leberkas. Venison cupim short ribs sausage tri-tip pork. "

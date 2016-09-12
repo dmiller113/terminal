@@ -18,17 +18,26 @@ scaledHealEffect = (percent) ->
 Game.ItemRepository.define({
   name: "Repair",
   symbol: '=',
-  foreground: "crimson",
+  foreground: "#FF0077",
   background: "black",
   useEffect: scaledHealEffect(15)
   mixins: [Game.Mixins.WalkoverEffectItem]
 })
 
 Game.ItemRepository.define({
-  # This is a terrible name
-  name: "Utility Data",
+  name: "Recover",
   symbol: '=',
-  foreground: "green",
+  foreground: "#FF274E",
   background: "black",
-  mixins: [Game.Mixins.WalkoverPickupItem]
-  })
+  useEffect: scaledHealEffect(35)
+  mixins: [Game.Mixins.WalkoverEffectItem]
+})
+
+Game.ItemRepository.define({
+  name: "Restore",
+  symbol: '=',
+  foreground: "maroon",
+  background: "black",
+  useEffect: scaledHealEffect(50)
+  mixins: [Game.Mixins.WalkoverEffectItem]
+})
