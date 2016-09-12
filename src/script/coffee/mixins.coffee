@@ -50,10 +50,16 @@ Game.Mixins.MessageRecipient =
     @_messages = []
 
   getMessages: ->
+    @_messages[(-1 * Game._constants._messageHeight)...]
+
+  getAllMessages: ->
     @_messages
 
   recieveMessage: (message) ->
-    @_messages.push(message)
+    while message.length > 0
+      messageLine = message[...(Game._constants._screenWidth - 2)]
+      @_messages.push(messageLine)
+      message = message[(Game._constants._screenWidth - 2)..]
 
   clearMessage: () ->
     @_messages = []

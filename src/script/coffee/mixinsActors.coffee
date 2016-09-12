@@ -4,7 +4,6 @@ Game.Mixins.PlayerActor = {
   act: () ->
     Game.refresh()
     @getMap().getEngine().lock()
-    @clearMessage()
 }
 
 Game.Mixins.FungusActor = {
