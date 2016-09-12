@@ -30,3 +30,9 @@ Game.Messages.FullInventory = "Your inventory is full."
 
 # No damage delt
 Game.Messages.noDamage = "%s attacks %s for no damage!"
+
+# Healing message
+Game.Messages.healDamage = "%s heals %d Structure!"
+
+# Stepping on an onWalkItem
+Game.Messages.walkoverItem = "%s steps on %s."

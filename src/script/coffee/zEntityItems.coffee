@@ -11,20 +11,17 @@ Game.ItemRepository.define({
   mixins: [Game.Mixins.WalkoverEffectItem]
 })
 
-Game.ItemRepository.define({
-  name: "Offensive Data",
-  symbol: '=',
-  foreground: "red",
-  background: "black",
-  mixins: [Game.Mixins.WalkoverPickupItem]
-})
+scaledHealEffect = (percent) ->
+  return (target) ->
+    target.raiseEvent("healDamagePercent", {source: @, percent: percent || 10} )
 
 Game.ItemRepository.define({
-  name: "Defensive Data",
+  name: "Repair",
   symbol: '=',
-  foreground: "cyan",
+  foreground: "crimson",
   background: "black",
-  mixins: [Game.Mixins.WalkoverPickupItem]
+  useEffect: scaledHealEffect(15)
+  mixins: [Game.Mixins.WalkoverEffectItem]
 })
 
 Game.ItemRepository.define({

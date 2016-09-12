@@ -26,6 +26,21 @@ Game.Mixins.SimpleDestructible =
   name: "SimpleDestructible"
   groupName: "Destructible"
   listeners:
+    healDamage:
+      priority: 25
+      func: (type, dict) ->
+        oldHp = @_hp
+        @_hp = Math.min(@_maxHp, @_hp + dict.amount)
+        dict.amountHealed = @_hp - oldHp
+
+    healDamagePercent:
+      priority: 25
+      func: (type, dict) ->
+        percent = dict.percent
+        rawHeal = Math.floor(@_maxHp * percent) + @_hp
+        dict.amount = rawHeal
+        @raiseEvent("healDamage", dict)
+
     takeDamage:
       priority: 25
       func: (type, dict) ->

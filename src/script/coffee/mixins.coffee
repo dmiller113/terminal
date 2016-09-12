@@ -21,7 +21,7 @@ Game.Mixins.MessageRecipient =
       func: (type, dict) ->
         damage = dict.damage.amount
         @recieveMessage(Game.parseMessage(Game.Messages.damageMessage,
-          [@describeA(true), damage]))
+          [dict.source.describe(), damage]))
 
     onDeath:
       priority: 15
@@ -32,6 +32,19 @@ Game.Mixins.MessageRecipient =
         else
           @recieveMessage(Game.parseMessage(Game.Messages.killMessage, [source.describeA(True), @describeA()]))
 
+    healDamage:
+      priority: 10
+      func: (type, dict) ->
+        @recieveMessage(Game.parseMessage(Game.Messages.healDamage, [
+          @describe(), dict.amountHealed
+        ]))
+
+    walkedOver:
+      priority: 10
+      func: (type, dict) ->
+        @recieveMessage(Game.parseMessage(Game.Messages.walkoverItem, [
+          @describe(), dict.item.describeA(false)
+        ]))
 
   init: (template) ->
     @_messages = []

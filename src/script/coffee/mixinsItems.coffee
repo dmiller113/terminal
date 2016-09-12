@@ -149,7 +149,14 @@ Game.Mixins.WalkoverEffectItem =
       priority: 50
       func: (type, dict) ->
         actor = dict.source
+        actor.raiseEvent("walkedOver", {item: @})
         @_useEffect(actor, @)
+        @raiseEvent("destroyItem", {source: @})
+
+    destroyItem:
+      priority: 25
+      func: (type, dict) ->
+        @getMap().removeEntity(this)
 
   init: (template) ->
     @_useEffect = template.useEffect || (actor) -> return
