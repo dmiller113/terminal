@@ -33,7 +33,7 @@ MVP Specs
   - Daemons: Annoyance ICE. Specializes in replication and Point Blank AoEs. Produces AoE centered abilities with the drawback of effecting the player in addition to themselves.
   - Engineer: Battlefield builders. Alters the battlefield by constructing various objects, from cover to nodes that produce effects, to turrets that use abilities. Produces abilities that create temporary units that use abilities.
   - Tracer: The eyes of the network's AI. Uses abilities that bring more attention from the network's security AI, and System Administrators. Also uses abilities that weight friendly abilities toward the higher end of their ranges. Produces abilities that give information to the player.
-- Enemies have a range of abilities that they can spawn with, altered every game to a subset of their abilities. They also have varations based upon ability alterations. Varients are colored differently, and have key words describing their alterations.
+- Enemies have a range of abilities that they can spawn with, altered every game to a subset of their abilities. They also have variations based upon ability alterations. Variants are colored differently, and have key words describing their alterations.
 - No experience system. Gain a "level" each time you enter a new network. Gaining a level allows you to strengthen a slot and increase a stat.
 - Abilities can be tied to a stat that increase their effectiveness.
 - Abilities are analyzed from enemies and their corpses. Each ability has an amount that needs to be analyzed.
