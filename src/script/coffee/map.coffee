@@ -14,6 +14,10 @@ class Map
     @_width = tiles.length
     @_height = tiles[0].length
 
+    @_memory = []
+    # Ugly list comprehenions
+    @_memory.push(false for y in [0...@_height]) for x in [0...@_width]
+
 
     # FoV
     map = this
@@ -90,6 +94,15 @@ class Map
 
   isEmptyFloor: (x, y) ->
     @getTile(x, y) == Game.Tile.floorTile and !@getEntityAt(x, y)
+
+  isRemembered: (x, y) ->
+    @_memory[x][y]
+
+  remember: (x, y) ->
+    @_memory[x][y] = true
+
+  forget: (x, y) ->
+    @_memory[x][y] = false
 
   addEntity: (entity) ->
     pos = entity.getXY()

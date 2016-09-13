@@ -100,20 +100,29 @@ Game.Screen.playScreen =
     # Render the map to the display
     for x in [topLeftX..(topLeftX + screenWidth - 1)]
       for y in [topLeftY..(topLeftY + screenHeight - 1)]
+        glyph = @_map.getTile(x,y)
         if visibleFoV["#{x},#{y}"]
-          glyph = @_map.getTile(x,y)
           display.draw(mapInsetX + x - topLeftX,
                        mapInsetY + y - topLeftY,
                        glyph.getChar(), glyph.getForeground(),
                        glyph.getBackground())
+
+          if @_map.isRemembered(x,y) == false
+            @_map.remember(x,y)
         else
-          num = Math.floor(Math.random() * 4)
-          block = 0x2590
-          if num == 0
-            block = 0x2588
-          display.draw(
-            mapInsetX + x - topLeftX, mapInsetY + y - topLeftY,
-            String.fromCodePoint(block + num), "#131313", "black")
+          if @_map.isRemembered(x,y)
+            display.draw(mapInsetX + x - topLeftX,
+                         mapInsetY + y - topLeftY,
+                         glyph.getChar(),
+                         "#252525", "black")
+          else
+            num = Math.floor(Math.random() * 4)
+            block = 0x2590
+            if num == 0
+              block = 0x2588
+            display.draw(
+              mapInsetX + x - topLeftX, mapInsetY + y - topLeftY,
+              String.fromCodePoint(block + num), "#131313", "black")
 
     player = null
 
