@@ -114,7 +114,7 @@ Game.Screen.playScreen =
             display.draw(mapInsetX + x - topLeftX,
                          mapInsetY + y - topLeftY,
                          glyph.getChar(),
-                         "#252525", "black")
+                         "#3C3C3C", "black")
           else
             num = Math.floor(Math.random() * 4)
             block = 0x2590
