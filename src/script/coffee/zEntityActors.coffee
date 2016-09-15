@@ -5,7 +5,7 @@ Game.playerTemplate = {
   background: "black",
   atkValue: 10,
   maxHp: 40,
-  sightRadius: 8,
+  sightRadius: 1,
   scan: 3,
   offense: 3,
   hardening: 3,

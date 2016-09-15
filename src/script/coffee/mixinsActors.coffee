@@ -46,7 +46,9 @@ Game.Mixins.Sight = {
   init: (template) ->
     @_sightRadius = template['sightRadius'] || 5
   getSightRadius: () ->
-    @_sightRadius
+    result = {}
+    @raiseEvent("startSightRadius", result)
+    @_sightRadius + (result.addedRadius || 0)
 }
 
 Game.Mixins.Attributes = if Game.Mixins.Attributes? then Game.Mixins.Attributes else {}
@@ -106,6 +108,10 @@ Game.Mixins.Attributes.Scan = {
       func: (type, dict) ->
         stats = dict.stats
         stats.Scan = @getScan()
+    startSightRadius:
+      priority: 75
+      func: (type, dict) ->
+        dict.addedRadius = @getScan()
 
   init: (template) ->
     if @_attributes == undefined
