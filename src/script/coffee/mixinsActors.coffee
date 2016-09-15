@@ -160,3 +160,36 @@ Game.Mixins.Abilities.SimpleAbilityUser =
             origin: @,
             stats: dict.stats,
           })
+
+Game.Mixins.standardFocus =
+  name: "Standard Focus"
+  groupName: "Focus"
+  listeners:
+    gainFocus:
+      priority: 25
+      # Dict should contain .amount which is the amount of focus to gain
+      func: (type, dict) ->
+        @_focus = Math.min(100, @_focus + dict.amount)
+    checkFocus:
+      priority: 25
+      # Dict should be an object
+      func: (type, dict) ->
+        dict.totalFocus = @_focus
+    takeDamage:
+      priority: 10
+      # Dict should have .damage containing the amount of damage delt.
+      func: (type, dict) ->
+        amountDelt = dict.damage.damageDelt || 0
+        @raiseEvent('gainFocus', {amount: Math.max(1, Math.floor(amountDelt / 4))})
+
+    deltDamage:
+      priority: 10
+      # Dict should have .damage containing the amount of damage delt.
+      func: (type, dict) ->
+        amountDelt = dict.damage.damageDelt || 0
+        @raiseEvent('gainFocus', {amount: Math.max(1, Math.floor(amountDelt / 2))})
+
+
+  init: (template) ->
+    @_focus = template.startingFocus || 0
+    @_maxFocus = template.maxFocus || 100

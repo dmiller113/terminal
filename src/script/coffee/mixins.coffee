@@ -8,7 +8,7 @@ Game.Mixins.MessageRecipient =
       priority: 15
       func: (type, dict) ->
         target = dict.target
-        damage = dict.damage.amount
+        damage = dict.damage.damageDelt
         message = Game.parseMessage(Game.Messages.attackMessage,
           [@describe(), target.describeA(false), damage])
         if damage < 1
@@ -19,7 +19,7 @@ Game.Mixins.MessageRecipient =
     takeDamage:
       priority: 10
       func: (type, dict) ->
-        damage = dict.damage.amount
+        damage = dict.damage.damageDelt
         @recieveMessage(Game.parseMessage(Game.Messages.damageMessage,
           [dict.source.describe(), damage]))
 

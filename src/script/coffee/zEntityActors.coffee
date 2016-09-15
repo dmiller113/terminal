@@ -5,6 +5,7 @@ Game.playerTemplate = {
   background: "black",
   atkValue: 10,
   maxHp: 40,
+  maxFocus: 100,
   sightRadius: 1,
   scan: 3,
   offense: 3,
@@ -22,7 +23,7 @@ Game.playerTemplate = {
     Game.Mixins.Abilities.SimpleAbilityUser, Game.Mixins.MessageRecipient,
     Game.Mixins.SimpleDestructible, Game.Mixins.Sight, Game.Mixins.Attributes.Scan,
     Game.Mixins.Attributes.Hardening, Game.Mixins.Attributes.Offense,
-    Game.Mixins.Attributes.Stealth, Game.Mixins.ActiveMemory],
+    Game.Mixins.Attributes.Stealth, Game.Mixins.ActiveMemory, Game.Mixins.standardFocus],
 }
 
 Game.EntityRepository = new Repository('entities', Entity)
@@ -40,7 +41,5 @@ Game.EntityRepository.define({
   symbol: "G",
   foreground: "MediumSeaGreen",
   maxHp: 20
-  hardening: 20
-  mixins: [Game.Mixins.Wander, Game.Mixins.SimpleDestructible,
-           Game.Mixins.Attributes.Hardening]
+  mixins: [Game.Mixins.Wander, Game.Mixins.SimpleDestructible]
 })

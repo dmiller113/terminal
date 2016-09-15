@@ -301,11 +301,14 @@ Game.Screen.playScreen =
         "%c{lime}" + ability + ": #{value.name}%c{}")
       i++
 
+    focus = {}
+    @_player.raiseEvent("checkFocus", focus)
+
     # Draw HP values
     statsText = vsprintf('Structure: %d/%d', [@_player.getHp(), @_player.getMaxHp()])
     display.drawText(constants._statusRow + 2, constants._hpFocusCol, "%c{lime}" + statsText + "%c{}")
     display.drawText(constants._statusRow + 6, constants._hpFocusCol + 1,
-      "%c{lime}Focus: 66% %c{}")
+      "%c{lime}Focus: #{focus.totalFocus || 0}% %c{}")
 
     # Player Name
     display.drawText(constants._statusRow + 2, constants._nameCol,

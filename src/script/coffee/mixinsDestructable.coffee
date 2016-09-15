@@ -12,6 +12,8 @@ Game.Mixins.FragileDestructible =
         if @_hp < 0
           source.raiseEvent('onKill')
           @raiseEvent('onDeath')
+          dict.damage.didKill = true
+          dict.damage.damageDelt = Math.max(1, damage + @_hp)
     # Destructable handles removing the entity
     onDeath:
       priority: 25
@@ -49,9 +51,13 @@ Game.Mixins.SimpleDestructible =
 
         @_hp -= damage
         # If we have less than 0 hp than remove ourselves
+        dict.damage.damageDelt = damage
         if @_hp < 0
           source.raiseEvent('onKill', {damage: damage, target: @})
           @raiseEvent('onDeath', {source: source})
+          dict.damage.didKill = true
+          dict.damage.damageDelt = Math.max(1, damage + @_hp)
+        dict.damage.didDamage = if damage > 0 then true else false
 
     onDeath:
       priority: 25
