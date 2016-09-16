@@ -26,6 +26,8 @@ Game =
     _screenMapWidth: 50
     _statusTitleCol: 61
     _messageTitleCol: 37
+    _captionCol: 1
+    _captionRow: 32
     _titles:
       game:
         title: "Terminal [#{Version}]"

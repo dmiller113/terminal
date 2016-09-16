@@ -5,6 +5,7 @@ class Tile extends Glyph
     @_isWalkable = options.isWalkable || false
     @_isDiggable = options.isDiggable || false
     @_blocksLight = options.blocksLight || false
+    @_name = options.name || "Unknown Memory"
 
   isWalkable: ->
     @_isWalkable
@@ -14,6 +15,9 @@ class Tile extends Glyph
 
   blocksLight: ->
     @_blocksLight
+
+  name: ->
+    @_name
 
 Game.Tile = Tile
 
@@ -25,9 +29,11 @@ Game.Tile.wallTile = new Game.Tile({
   foreground: 'goldenrod',
   isDiggable: true,
   blocksLight: true,
+  name: "Occupied Memory",
 })
 
 Game.Tile.floorTile = new Game.Tile({
   symbol: '.',
   isWalkable: true,
+  name: "Free Memory",
 })

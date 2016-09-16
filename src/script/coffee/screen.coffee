@@ -455,29 +455,39 @@ Game.Screen.InventoryScreen = new ItemListScreen({
 class TargetBasedScreen
   constructor: (template) ->
     template = template || {}
+    constants = Game.getConstants()
 
     # Grab the function that executes on selection, or a default function that
     # does nothing and consumes no turn.
-    @_selectFunction = template.okFunction || (x, y) ->
+    @_selectFunction = template.okFunction || (x, y, map) ->
       return false
 
     # The function that sets the caption, or a function that returns the empty
     # string
-    @_captionFunction = template.captionFunction || (x, y) ->
+    @_captionFunction = template.captionFunction || (x, y, map) ->
       return ""
 
     @_isLineConnected = template.isLineConnected || false
 
     # The function that draws the cursor or a default *
     @_cursorFunction = template.cursorFunction || (display, x, y, isConnected) ->
-      display.draw(x, y, '*', "#880088", "#000")
+
+      display.draw(x + @_mapInsetX, y + @_mapInsetY, '*', "#880088", "#000")
+
+      if isConnected
+        points = Game.Geometry.getLine(@_startX, @_startY, @_cursorX, @_cursorY)
+        for point in points
+          display.draw(point.x + @_mapInsetX, point.y + @_mapInsetY, '*',
+            "#880088", "#000")
 
   setup: (player, startX, startY, offsetX, offsetY) ->
     @_player = player
     @_startX = startX - offsetX
     @_startY = startY - offsetY
-    @_cursorX = @_startX + 1
-    @_cursorY = @_startY + 1
+    @_cursorX = @_startX
+    @_cursorY = @_startY
+    @_offsetX = offsetX
+    @_offsetY = offsetY
     @_cachedStats = {}
     @_player.raiseEvent("getStats", {stats: @_cachedStats})
     @_constants = Game.getConstants()
@@ -486,19 +496,27 @@ class TargetBasedScreen
     @_mapInsetX = Game.getConstants()._screenMapCol
     @_mapInsetY = Game.getConstants()._screenMapRow
     # Figure out where our top left cell should be
-    map = @_player.getMap()
+    @_map = @_player.getMap()
     # Make sure the x-axis doesn't go to the left of the left bound
     topLeftX = Math.max(0, startX - (@_screenWidth / 2));
 
     # Make sure we still have enough space to fit an entire game screen
-    @_topLeftX = Math.min(topLeftX, map.getWidth() - @_screenWidth);
+    @_topLeftX = Math.min(topLeftX, @_map.getWidth() - @_screenWidth);
 
     # Make sure the y-axis doesn't above the top bound
     topLeftY = Math.max(0, startY - (@_screenHeight / 2));
 
     # Make sure we still have enough space to fit an entire game screen
-    @_topLeftY = Math.min(topLeftY, map.getHeight() - @_screenHeight);
+    @_topLeftY = Math.min(topLeftY, @_map.getHeight() - @_screenHeight);
 
+    visibleCells = {}
+    callback = (x, y, radius, visibility) ->
+      visibleCells["#{x},#{y}"] = true
+
+    @_map.getFoV().compute(player.getX(), player.getY(),
+      player.getSightRadius(), callback)
+
+    @_visibleCells = visibleCells
 
   render: (display) ->
     Game.Screen.playScreen._renderTiles.call(Game.Screen.playScreen, display,
@@ -508,31 +526,53 @@ class TargetBasedScreen
         topLeftX: @_topLeftX, topLeftY: @_topLeftY,
       })
 
+    # Draw Caption
+    @_captionFunction(@_cursorX + @_offsetX, @_cursorY + @_offsetY, @_map, display)
+
     # Draw cursor
-    @_cursorFunction(display, @_cursorX , @_cursorY, @_isLineConnected)
+    @_cursorFunction(display, @_cursorX , @_cursorY, @_isLineConnected, display)
 
   moveCursor: (dx, dy) ->
-    @_cursorX = Math.max(1, Math.min(@_cursorX + dx, @_screenWidth))
-    @_cursorY = Math.max(1, Math.min(@_cursorY + dy, @_screenHeight))
+    @_cursorX = Math.max(0, Math.min(@_cursorX + dx, @_screenWidth - 1))
+    @_cursorY = Math.max(0, Math.min(@_cursorY + dy, @_screenHeight - 1))
 
   executeOkFunction: () ->
     Game.Screen.playScreen.setSubScreen(null)
+    if @_okFunction(@_cursorX + @_offsetX, @_cursorY + @_offsetY, @_map)
+      @_map.getEngine().unlock()
 
   handleInput: (inputType, inputData) ->
     # Move the cursor
     if inputType == 'keydown'
-        if inputData.keyCode == ROT.VK_LEFT
+      switch inputData.keyCode
+        when ROT.VK_LEFT
             @moveCursor(-1, 0)
-        else if inputData.keyCode == ROT.VK_RIGHT
+        when ROT.VK_RIGHT
             @moveCursor(1, 0)
-        else if inputData.keyCode == ROT.VK_UP
+        when ROT.VK_UP
             @moveCursor(0, -1)
-        else if inputData.keyCode == ROT.VK_DOWN
+        when ROT.VK_DOWN
             @moveCursor(0, 1)
-        else if inputData.keyCode == ROT.VK_ESCAPE
+        when ROT.VK_ESCAPE
             Game.Screen.playScreen.setSubScreen(null)
-        else if inputData.keyCode == ROT.VK_RETURN
-            @executeOkFunction()
+        when ROT.VK_RETURN
+          @executeOkFunction()
     Game.refresh();
 
-Game.Screen.lookScreen = new TargetBasedScreen()
+Game.Screen.lookScreen = new TargetBasedScreen({
+  captionFunction: (x, y, map, display) ->
+    name = ""
+    if @_map.isRemembered(x,y)
+      name = map.getTile(x, y).name()
+      if @_visibleCells["#{x},#{y}"]
+        entity = map.getEntityAt(x, y)
+        if entity
+          name = entity.name
+    else
+      name = "Memory out of Scan range"
+    constants = Game.getConstants()
+    display.drawText(constants._captionCol, constants._captionRow,
+      "%c{lime}Use the arrows to move, Escape to cancel, and Enter to view details.")
+    display.drawText(constants._captionCol, constants._captionRow-1,
+      "%c{lime}" + name + "%c{}")
+})
