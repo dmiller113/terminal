@@ -20,6 +20,7 @@ Game.Screen.startScreen =
     if eventType == "keydown" and event.keyCode == ROT.VK_RETURN
       Game.switchScreen(Game.Screen.playScreen)
 
+
 Game.Screen.playScreen =
   _map: null
   _mapWidth: 240,
@@ -84,124 +85,12 @@ Game.Screen.playScreen =
     # Make sure we still have enough space to fit an entire game screen
     topLeftY = Math.min(topLeftY, @_map.getHeight() - screenHeight);
 
-    # Compute FoV
-    visibleFoV = {}
+    @_renderTiles(display, constants, stats, {
+      screenWidth: screenWidth, screenHeight: screenHeight,
+      mapInsetX: mapInsetX, mapInsetY: mapInsetY,
+      topLeftX: topLeftX, topLeftY: topLeftY,
+    })
 
-    callback = (x, y, radius, visibility) ->
-      visibleFoV["#{x},#{y}"] = true
-
-    @_player.getMap().getFoV().compute(@_player.getX(), @_player.getY(),
-      @_player.getSightRadius(), callback)
-
-    @_drawUILines(display, constants, stats)
-
-    @_fillUI(display, constants, stats)
-
-    # Render the map to the display
-    for x in [topLeftX..(topLeftX + screenWidth - 1)]
-      for y in [topLeftY..(topLeftY + screenHeight - 1)]
-        glyph = @_map.getTile(x,y)
-        if visibleFoV["#{x},#{y}"]
-          display.draw(mapInsetX + x - topLeftX,
-                       mapInsetY + y - topLeftY,
-                       glyph.getChar(), glyph.getForeground(),
-                       glyph.getBackground())
-
-          if @_map.isRemembered(x,y) == false
-            @_map.remember(x,y)
-        else
-          if @_map.isRemembered(x,y)
-            display.draw(mapInsetX + x - topLeftX,
-                         mapInsetY + y - topLeftY,
-                         glyph.getChar(),
-                         "#3C3C3C", "black")
-          else
-            num = Math.floor(Math.random() * 4)
-            block = 0x2590
-            if num == 0
-              block = 0x2588
-            display.draw(
-              mapInsetX + x - topLeftX, mapInsetY + y - topLeftY,
-              String.fromCodePoint(block + num), "#131313", "black")
-
-    player = null
-
-    inView = {}
-    # Render entities to the screen
-    for entity in @_map.getEntities()
-      pos = entity.getXY()
-      if (pos.x >= topLeftX && pos.x < (topLeftX + screenWidth) &&
-          pos.y >= topLeftY && pos.y < (topLeftY + screenHeight) &&
-          visibleFoV["#{pos.x},#{pos.y}"])
-
-        if entity.hasMixin("PlayerActor")
-          player = entity
-        else
-          display.draw(
-            mapInsetX + pos.x - topLeftX, mapInsetY + pos.y - topLeftY,
-            entity.getChar(), entity.getForeground(), entity.getBackground())
-
-          # Append to the list of actors in view of the player
-          if entity.name of inView
-            inView[entity.name].number += 1
-          else
-            inView[entity.name] = {
-              number: 1
-              symbol: entity.getChar()
-              color: entity.getForeground()
-            }
-
-    # Draw the enemies in View
-    i = 0
-    sortFunction = (item1, item2) ->
-      if item1 < item2
-        return -1
-      if item1 <= item2
-        return 0
-      return 1
-
-    inViewKeys = Object.keys(inView).sort(sortFunction)
-
-    # Contain list to 8 objects
-    if inViewKeys.length > 8
-      inViewKeys = inViewKeys[...8]
-      display.drawText(constants._statusRow + 2, constants._inViewCol + 7,
-        "And more...")
-
-    for key in inViewKeys
-      # Handle the seperation
-      additionalCol = 2
-      additionalRow = if i < 4 then i else i - 4
-      if i > 3
-        additionalCol += 4 + inViewKeys[i-4].length
-      display.drawText(
-        constants._statusRow + additionalCol, constants._inViewCol + additionalRow,
-        "%c{#{inView[key].color}}" + inView[key].number + " " + key + "%c{}")
-      i++
-    # Nothing in view, add an empty message
-    if inViewKeys.length == 0
-      display.drawText(constants._statusRow + 2, constants._inViewCol,
-        "%c{lime} Nothing in view...%c{}")
-
-    # Draw the player last
-    pos = player.getXY()
-    display.draw(
-      mapInsetX + pos.x - topLeftX, mapInsetY + pos.y - topLeftY,
-      player.getChar(), player.getForeground(), player.getBackground())
-
-    # Draw status
-    # stats = '%c{white}%b{black}'
-    # stats += vsprintf('HP: %d/%d', [@_player.getHp(), @_player.getMaxHp()])
-    # stats += vsprintf(' Atk: %d Def: %d', [@_player.getAttack(),
-    #   @_player.getDef()])
-    # display.drawText(0, screenHeight + 1, stats)
-
-    # Draw messages
-    messageY = screenHeight + 2
-    for message in @_player.getMessages()
-      messageY += display.drawText(
-        1, messageY, '%c{lawngreen}%b{black}' + message
-      )
 
   move: (cx, cy) ->
     # X
@@ -216,8 +105,8 @@ Game.Screen.playScreen =
     if @_subscreen != null
       @_subscreen.handleInput(eventType, event)
       return
+    newTurn = false
     if eventType == "keydown"
-      newTurn = false
       switch event.keyCode
         when ROT.VK_RETURN
           Game.switchScreen(Game.Screen.winScreen)
@@ -245,8 +134,17 @@ Game.Screen.playScreen =
             Game.Screen.InventoryScreen.setup(@_player, @_player.getItems());
             @setSubScreen(Game.Screen.InventoryScreen);
           return;
-      if newTurn
-        @_map.getEngine().unlock()
+    else if eventType == "keypress"
+      switch event.keyCode
+        when ROT.VK_SEMICOLON
+          x = @_player.getX()
+          y = @_player.getY()
+          offsets = @getOffsets(x, y)
+          Game.Screen.lookScreen.setup(@_player,
+            x, y, offsets.x, offsets.y)
+          @setSubScreen(Game.Screen.lookScreen)
+    if newTurn
+      @_map.getEngine().unlock()
 
   _drawUILines: (display, constants, stats) ->
     # Draw UI lines
@@ -290,7 +188,9 @@ Game.Screen.playScreen =
     for prop, title of constants._titles
       display.drawText(title.x, title.y, "%c{lime}-" + title.title + "-%c{}")
 
-  _fillUI: (display, constants, stats) ->
+  _fillUI: (display, constants, stats, inView, dimensions) ->
+    screenWidth = dimensions.screenWidth
+    screenHeight = dimensions.screenHeight
     # Draw Ability Markers
     activeMemory = {}
     @_player.raiseEvent("getAbilities", activeMemory)
@@ -321,6 +221,145 @@ Game.Screen.playScreen =
       display.drawText(x, constants._statCol + (i % 2),
         "%c{lime}" + stat + ": " + value + "%c{}")
       i++
+
+    # In view
+    # Draw the enemies in View
+    i = 0
+    sortFunction = (item1, item2) ->
+      if item1 < item2
+        return -1
+      if item1 <= item2
+        return 0
+      return 1
+
+    inViewKeys = Object.keys(inView).sort(sortFunction)
+
+    # Contain list to 8 objects
+    if inViewKeys.length > 8
+      inViewKeys = inViewKeys[...8]
+      display.drawText(constants._statusRow + 2, constants._inViewCol + 7,
+        "And more...")
+
+    for key in inViewKeys
+      # Handle the seperation
+      additionalCol = 2
+      additionalRow = if i < 4 then i else i - 4
+      if i > 3
+        additionalCol += 4 + inViewKeys[i-4].length
+      display.drawText(
+        constants._statusRow + additionalCol, constants._inViewCol + additionalRow,
+        "%c{#{inView[key].color}}" + inView[key].number + " " + key + "%c{}")
+      i++
+    # Nothing in view, add an empty message
+    if inViewKeys.length == 0
+      display.drawText(constants._statusRow + 2, constants._inViewCol,
+        "%c{lime} Nothing in view...%c{}")
+
+    # Draw messages
+    messageY = screenHeight + 2
+    for message in @_player.getMessages()
+      messageY += display.drawText(
+        1, messageY, '%c{lawngreen}%b{black}' + message
+      )
+
+  _renderTiles: (display, constants, stats, dimensions) ->
+    # Dimensions
+    topLeftX = dimensions.topLeftX
+    topLeftY = dimensions.topLeftY
+    screenHeight = dimensions.screenHeight
+    screenWidth = dimensions.screenWidth
+    mapInsetX = dimensions.mapInsetX
+    mapInsetY = dimensions.mapInsetY
+
+    # Compute FoV
+    visibleFoV = {}
+
+    callback = (x, y, radius, visibility) ->
+      visibleFoV["#{x},#{y}"] = true
+
+    @_player.getMap().getFoV().compute(@_player.getX(), @_player.getY(),
+      @_player.getSightRadius(), callback)
+
+    @_drawUILines(display, constants, stats)
+
+    # Render the map to the display
+    for x in [topLeftX..(topLeftX + screenWidth - 1)]
+      for y in [topLeftY..(topLeftY + screenHeight - 1)]
+        glyph = @_map.getTile(x,y)
+        if visibleFoV["#{x},#{y}"]
+          display.draw(mapInsetX + x - topLeftX,
+                       mapInsetY + y - topLeftY,
+                       glyph.getChar(), glyph.getForeground(),
+                       glyph.getBackground())
+
+          if @_map.isRemembered(x,y) == false
+            @_map.remember(x,y)
+        else
+          if @_map.isRemembered(x,y)
+            display.draw(mapInsetX + x - topLeftX,
+                         mapInsetY + y - topLeftY,
+                         glyph.getChar(),
+                         "#3C3C3C", "black")
+          else
+            num = Math.floor(Math.random() * 4)
+            block = 0x2590
+            if num == 0
+              block = 0x2588
+            display.draw(
+              mapInsetX + x - topLeftX, mapInsetY + y - topLeftY,
+              String.fromCodePoint(block + num), "#131313", "black")
+
+    player = null
+
+    inView = {}
+    # Render entities to the screen
+    for entity in @_map.getEntities()
+      pos = entity.getXY()
+      if (pos.x >= topLeftX && pos.x < (topLeftX + screenWidth) &&
+          pos.y >= topLeftY && pos.y < (topLeftY + screenHeight) &&
+          visibleFoV["#{pos.x},#{pos.y}"])
+        if entity.hasMixin("PlayerActor")
+          player = entity
+        else
+          display.draw(
+            mapInsetX + pos.x - topLeftX, mapInsetY + pos.y - topLeftY,
+            entity.getChar(), entity.getForeground(), entity.getBackground())
+
+          # Append to the list of actors in view of the player
+          if entity.name of inView
+            inView[entity.name].number += 1
+          else
+            inView[entity.name] = {
+              number: 1
+              symbol: entity.getChar()
+              color: entity.getForeground()
+            }
+
+    # Draw the player last
+    pos = player.getXY()
+    display.draw(
+      mapInsetX + pos.x - topLeftX, mapInsetY + pos.y - topLeftY,
+      player.getChar(), player.getForeground(), player.getBackground())
+
+    @_fillUI(display, constants, stats, inView, {screenWidth: screenWidth, screenHeight: screenHeight})
+
+  getOffsets: (x, y) ->
+    screenWidth = Game.getScreenWidth()
+    screenHeight = Game.getScreenHeight()
+
+    # Make sure the x-axis doesn't go to the left of the left bound
+    topLeftX = Math.max(0, x - (screenWidth / 2));
+
+    # Make sure we still have enough space to fit an entire game screen
+    topLeftX = Math.min(topLeftX, @_map.getWidth() - screenWidth);
+
+    # Make sure the y-axis doesn't above the top bound
+    topLeftY = Math.max(0, y - (screenHeight / 2));
+
+    # Make sure we still have enough space to fit an entire game screen
+    topLeftY = Math.min(topLeftY, @_map.getHeight() - screenHeight);
+
+    return {x: topLeftX, y: topLeftY}
 
 Game.Screen.winScreen =
   enter: ->
@@ -411,3 +450,89 @@ Game.Screen.InventoryScreen = new ItemListScreen({
   caption: "Inventory",
   canSelect: false,
 })
+
+
+class TargetBasedScreen
+  constructor: (template) ->
+    template = template || {}
+
+    # Grab the function that executes on selection, or a default function that
+    # does nothing and consumes no turn.
+    @_selectFunction = template.okFunction || (x, y) ->
+      return false
+
+    # The function that sets the caption, or a function that returns the empty
+    # string
+    @_captionFunction = template.captionFunction || (x, y) ->
+      return ""
+
+    @_isLineConnected = template.isLineConnected || false
+
+    # The function that draws the cursor or a default *
+    @_cursorFunction = template.cursorFunction || (display, x, y, isConnected) ->
+      display.draw(x, y, '*', "#880088", "#000")
+
+  setup: (player, startX, startY, offsetX, offsetY) ->
+    @_player = player
+    @_startX = startX - offsetX
+    @_startY = startY - offsetY
+    @_cursorX = @_startX + 1
+    @_cursorY = @_startY + 1
+    @_cachedStats = {}
+    @_player.raiseEvent("getStats", {stats: @_cachedStats})
+    @_constants = Game.getConstants()
+    @_screenWidth = Game.getScreenWidth()
+    @_screenHeight = Game.getScreenHeight()
+    @_mapInsetX = Game.getConstants()._screenMapCol
+    @_mapInsetY = Game.getConstants()._screenMapRow
+    # Figure out where our top left cell should be
+    map = @_player.getMap()
+    # Make sure the x-axis doesn't go to the left of the left bound
+    topLeftX = Math.max(0, startX - (@_screenWidth / 2));
+
+    # Make sure we still have enough space to fit an entire game screen
+    @_topLeftX = Math.min(topLeftX, map.getWidth() - @_screenWidth);
+
+    # Make sure the y-axis doesn't above the top bound
+    topLeftY = Math.max(0, startY - (@_screenHeight / 2));
+
+    # Make sure we still have enough space to fit an entire game screen
+    @_topLeftY = Math.min(topLeftY, map.getHeight() - @_screenHeight);
+
+
+  render: (display) ->
+    Game.Screen.playScreen._renderTiles.call(Game.Screen.playScreen, display,
+      @_constants, @_cachedStats, {
+        screenWidth: @_screenWidth, screenHeight: @_screenHeight,
+        mapInsetX: @_mapInsetX, mapInsetY: @_mapInsetY,
+        topLeftX: @_topLeftX, topLeftY: @_topLeftY,
+      })
+
+    # Draw cursor
+    @_cursorFunction(display, @_cursorX , @_cursorY, @_isLineConnected)
+
+  moveCursor: (dx, dy) ->
+    @_cursorX = Math.max(1, Math.min(@_cursorX + dx, @_screenWidth))
+    @_cursorY = Math.max(1, Math.min(@_cursorY + dy, @_screenHeight))
+
+  executeOkFunction: () ->
+    Game.Screen.playScreen.setSubScreen(null)
+
+  handleInput: (inputType, inputData) ->
+    # Move the cursor
+    if inputType == 'keydown'
+        if inputData.keyCode == ROT.VK_LEFT
+            @moveCursor(-1, 0)
+        else if inputData.keyCode == ROT.VK_RIGHT
+            @moveCursor(1, 0)
+        else if inputData.keyCode == ROT.VK_UP
+            @moveCursor(0, -1)
+        else if inputData.keyCode == ROT.VK_DOWN
+            @moveCursor(0, 1)
+        else if inputData.keyCode == ROT.VK_ESCAPE
+            Game.Screen.playScreen.setSubScreen(null)
+        else if inputData.keyCode == ROT.VK_RETURN
+            @executeOkFunction()
+    Game.refresh();
+
+Game.Screen.lookScreen = new TargetBasedScreen()
