@@ -21,6 +21,11 @@ Game.AbilityRepository.define({
   key: ROT.VK_F
   symbol: "?"
   memory: 1
+  okFunction: (x, y, map, entity) ->
+    target = map.getEntityAt(x, y)
+    stats = {}
+    entity.raiseEvent("getStats", stats)
+    entity.raiseEvent("useEffect", {target, origin: entity, stats})
   effect: (target, origin, stats) ->
     damage = {type: normal, amount: 5}
     origin.raiseEvent('onAttacking', {damage: damage, target: target})

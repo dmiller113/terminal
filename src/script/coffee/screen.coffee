@@ -453,7 +453,7 @@ class TargetBasedScreen
 
     # Grab the function that executes on selection, or a default function that
     # does nothing and consumes no turn.
-    @_selectFunction = template.okFunction || (x, y, map) ->
+    @_selectFunction = template.okFunction || (x, y, map, actor) ->
       return false
 
     # The function that sets the caption, or a function that returns the empty
@@ -532,7 +532,8 @@ class TargetBasedScreen
 
   executeOkFunction: () ->
     Game.Screen.playScreen.setSubScreen(null)
-    if @_okFunction(@_cursorX + @_offsetX, @_cursorY + @_offsetY, @_map)
+    if @_selectFunction(@_cursorX + @_offsetX, @_cursorY + @_offsetY,
+        @_map, @_player)
       @_map.getEngine().unlock()
 
   handleInput: (inputType, inputData) ->
