@@ -106,4 +106,6 @@ class Entity extends Glyph
     if !(@_attachedListeners[event])
       return
     for listener in @_attachedListeners[event]
-      listener.func.apply(this, arguments)
+      retValue = listener.func.apply(this, arguments)
+      if retValue == "cancelEvent"
+        break

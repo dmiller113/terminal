@@ -13,7 +13,7 @@ Game.playerTemplate = {
   stealth: 3,
   abilities: {
     C: Game.AbilityRepository.create("protobump")
-    R: null
+    R: Game.AbilityRepository.create("protoranged")
     "1": null
     "2": null
     "3": null

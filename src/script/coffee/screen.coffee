@@ -106,6 +106,10 @@ Game.Screen.playScreen =
       @_subscreen.handleInput(eventType, event)
       return
     newTurn = false
+    x = @_player.getX()
+    y = @_player.getY()
+    offsets = @getOffsets(x, y)
+
     if eventType == "keydown"
       switch event.keyCode
         when ROT.VK_RETURN
@@ -123,26 +127,16 @@ Game.Screen.playScreen =
           newTurn = @move(0, -1)
         when ROT.VK_DOWN
           newTurn = @move(0, 1)
-        # Inventory
-        when ROT.VK_I
-          if (item for letter, item of @_player.getItems()).filter((x) -> return x).length == 0
-            # If the player has no items, send a message and don't take a turn
-            Game.sendMessage(@_player, "You are not carrying anything!");
-            Game.refresh();
-          else
-            # Show the inventory
-            Game.Screen.InventoryScreen.setup(@_player, @_player.getItems());
-            @setSubScreen(Game.Screen.InventoryScreen);
-          return;
     else if eventType == "keypress"
       switch event.keyCode
         when ROT.VK_SEMICOLON
-          x = @_player.getX()
-          y = @_player.getY()
-          offsets = @getOffsets(x, y)
           Game.Screen.lookScreen.setup(@_player,
             x, y, offsets.x, offsets.y)
           @setSubScreen(Game.Screen.lookScreen)
+    dict = {event: event, actor: @_player, eventType: eventType, offsets: offsets}
+    @_player.raiseEvent("keyEvent", dict)
+    if "newTurn" of dict
+      newTurn = dict.newTurn
     if newTurn
       @_map.getEngine().unlock()
 
@@ -559,20 +553,27 @@ class TargetBasedScreen
           @executeOkFunction()
     Game.refresh();
 
+Game.Screen.Functions = {}
+Game.Screen.Functions.simpleCaption = (x, y, map, display) ->
+  name = ""
+  if @_map.isRemembered(x,y)
+    name = map.getTile(x, y).name()
+    if @_visibleCells["#{x},#{y}"]
+      entity = map.getEntityAt(x, y)
+      if entity
+        name = entity.name
+  else
+    name = "Memory out of Scan range"
+  constants = Game.getConstants()
+  display.drawText(constants._captionCol, constants._captionRow,
+    "%c{lime}Use the arrows to move, Escape to cancel, and Enter to view details.")
+  display.drawText(constants._captionCol, constants._captionRow-1,
+    "%c{lime}" + name + "%c{}")
+
 Game.Screen.lookScreen = new TargetBasedScreen({
-  captionFunction: (x, y, map, display) ->
-    name = ""
-    if @_map.isRemembered(x,y)
-      name = map.getTile(x, y).name()
-      if @_visibleCells["#{x},#{y}"]
-        entity = map.getEntityAt(x, y)
-        if entity
-          name = entity.name
-    else
-      name = "Memory out of Scan range"
-    constants = Game.getConstants()
-    display.drawText(constants._captionCol, constants._captionRow,
-      "%c{lime}Use the arrows to move, Escape to cancel, and Enter to view details.")
-    display.drawText(constants._captionCol, constants._captionRow-1,
-      "%c{lime}" + name + "%c{}")
+  captionFunction: Game.Screen.Functions.simpleCaption
+})
+
+Game.Screen.targetEntityScreen = new TargetBasedScreen({
+  captionFunction: Game.Screen.Functions.simpleCaption
 })

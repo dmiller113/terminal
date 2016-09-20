@@ -160,6 +160,17 @@ Game.Mixins.Abilities.SimpleAbilityUser =
             origin: @,
             stats: dict.stats,
           })
+    keyEvent:
+      priority: 50
+      # Dict should contain an .event that has the keyboard event, and an .actor
+      # that contains the entity that created the event .offsets because lazy.
+      func: (type, dict) ->
+        activeMemory = {}
+        @raiseEvent("getAbilities", activeMemory)
+        for key, ability of activeMemory.abilities
+          if "raiseEvent" of ability
+            ability.raiseEvent("onKeyEvent", dict)
+
 
 Game.Mixins.standardFocus =
   name: "Standard Focus"

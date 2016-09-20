@@ -175,3 +175,21 @@ Game.Mixins.WalkoverPickupItem =
 
   init: (template) ->
     @_useEffect = template.useEffect || (actor) -> return
+
+Game.Mixins.KeyResponder =
+  name: "Keyboard Responder"
+  groupName: "keyboard"
+  listeners:
+    onKeyEvent:
+      priority: 50
+      # Dict should have a .event that contains the keyboard event and .actor
+      # that contains the entity that spawned it and .eventType for the type
+      # of event
+      func: (type, dict) ->
+        if (dict.event.keyCode == @_key and dict.eventType == @_eventType)
+          @_keyFunction(dict.actor, dict.offsets)
+
+  init: (template) ->
+    @_key = template.key || ""
+    @_keyFunction = template.keyFunction || () -> return false
+    @_eventType = template.keyEvent || "keydown"
