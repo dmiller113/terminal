@@ -21,20 +21,22 @@ Game.AbilityRepository.define({
   key: ROT.VK_F
   symbol: "?"
   memory: 1
-  okFunction: (x, y, map, entity) ->
-    target = map.getEntityAt(x, y)
-    stats = {}
-    entity.raiseEvent("getStats", stats)
-    entity.raiseEvent("useEffect", {target, origin: entity, stats})
   effect: (target, origin, stats) ->
-    damage = {type: normal, amount: 5}
+    damage = {type: "normal", amount: 5}
     origin.raiseEvent('onAttacking', {damage: damage, target: target})
     target.raiseEvent('onAttack', {damage: damage, source: origin})
     target.raiseEvent("takeDamage", {source: origin, damage: damage})
     origin.raiseEvent('deltDamage', {damage: damage, target: target})
   keyFunction: (actor, offsets) ->
+    self = @
+    okFunction = (x, y, map, entity) ->
+      target = map.getEntityAt(x, y)
+      stats = {}
+      entity.raiseEvent("getStats", {stats})
+      self.raiseEvent("useEffect", {target, origin: entity, stats})
     screen = Game.Screen.targetEntityScreen
     screen.setup(actor, actor.getX(), actor.getY(), offsets.x, offsets.y)
+    screen.setSelectFunction(okFunction)
     Game.Screen.playScreen.setSubScreen(screen)
 
   mixins: [Game.Mixins.ConsumesMemory, Game.Mixins.HasEffect,

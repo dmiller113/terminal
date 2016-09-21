@@ -554,6 +554,9 @@ class TargetBasedScreen
           @executeOkFunction()
     Game.refresh();
 
+  setSelectFunction: (func) ->
+    @_selectFunction = func
+
 Game.Screen.Functions = {}
 Game.Screen.Functions.simpleCaption = (x, y, map, display) ->
   name = ""
