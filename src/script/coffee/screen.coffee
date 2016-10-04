@@ -182,7 +182,7 @@ Game.Screen.playScreen =
     for prop, title of constants._titles
       display.drawText(title.x, title.y, "%c{lime}-" + title.title + "-%c{}")
 
-  _fillUI: (display, constants, stats, inView, dimensions) ->
+  _fillUI: (display, constants, stats, inView, dimensions, messageLines = 5) ->
     screenWidth = dimensions.screenWidth
     screenHeight = dimensions.screenHeight
     # Draw Ability Markers
@@ -251,12 +251,12 @@ Game.Screen.playScreen =
 
     # Draw messages
     messageY = screenHeight + 2
-    for message in @_player.getMessages()
+    for message in @_player.getMessages(messageLines)
       messageY += display.drawText(
         1, messageY, '%c{lawngreen}%b{black}' + message
       )
 
-  _renderTiles: (display, constants, stats, dimensions) ->
+  _renderTiles: (display, constants, stats, dimensions, messageLines = 5) ->
     # Dimensions
     topLeftX = dimensions.topLeftX
     topLeftY = dimensions.topLeftY
@@ -335,7 +335,7 @@ Game.Screen.playScreen =
       mapInsetX + pos.x - topLeftX, mapInsetY + pos.y - topLeftY,
       player.getChar(), player.getForeground(), player.getBackground())
 
-    @_fillUI(display, constants, stats, inView, {screenWidth: screenWidth, screenHeight: screenHeight})
+    @_fillUI(display, constants, stats, inView, {screenWidth: screenWidth, screenHeight: screenHeight}, messageLines)
 
   getOffsets: (x, y) ->
     screenWidth = Game.getScreenWidth()
@@ -471,8 +471,12 @@ class TargetBasedScreen
       if isConnected
         points = Game.Geometry.getLine(@_startX, @_startY, @_cursorX, @_cursorY)
         for point in points
-          display.draw(point.x + @_mapInsetX, point.y + @_mapInsetY, '*',
+          display.draw(point.x + @_mapInsetX, point.y + @_mapInsetY, '3',
             "#880088", "#000")
+
+    # The function that has to be ok to select a target
+    @_isOkFunction = template.isOkFunction || (x, y, map, actor) ->
+      return true
 
   setup: (player, startX, startY, offsetX, offsetY) ->
     @_player = player
@@ -513,12 +517,13 @@ class TargetBasedScreen
     @_visibleCells = visibleCells
 
   render: (display) ->
+    display.clear()
     Game.Screen.playScreen._renderTiles.call(Game.Screen.playScreen, display,
       @_constants, @_cachedStats, {
         screenWidth: @_screenWidth, screenHeight: @_screenHeight,
         mapInsetX: @_mapInsetX, mapInsetY: @_mapInsetY,
         topLeftX: @_topLeftX, topLeftY: @_topLeftY,
-      })
+      }, 3)
 
     # Draw Caption
     @_captionFunction(@_cursorX + @_offsetX, @_cursorY + @_offsetY, @_map, display)
@@ -531,6 +536,9 @@ class TargetBasedScreen
     @_cursorY = Math.max(0, Math.min(@_cursorY + dy, @_screenHeight - 1))
 
   executeOkFunction: () ->
+    if !(@_isOkFunction(@_cursorX + @_offsetX, @_cursorY + @_offsetY,
+        @_map, @_player))
+      return
     Game.Screen.playScreen.setSubScreen(null)
     if @_selectFunction(@_cursorX + @_offsetX, @_cursorY + @_offsetY,
         @_map, @_player)
@@ -554,30 +562,39 @@ class TargetBasedScreen
           @executeOkFunction()
     Game.refresh();
 
-  setSelectFunction: (func) ->
-    @_selectFunction = func
+  setSelectFunction: (options) ->
+    options = options || {}
+    if "okFunction" of options
+      @_selectFunction = options.okFunction
+    if "isOkFunction" of options
+      @_isOkFunction = options.isOkFunction
 
 Game.Screen.Functions = {}
-Game.Screen.Functions.simpleCaption = (x, y, map, display) ->
-  name = ""
-  if @_map.isRemembered(x,y)
-    name = map.getTile(x, y).name()
-    if @_visibleCells["#{x},#{y}"]
-      entity = map.getEntityAt(x, y)
-      if entity
-        name = entity.name
-  else
-    name = "Memory out of Scan range"
-  constants = Game.getConstants()
-  display.drawText(constants._captionCol, constants._captionRow,
-    "%c{lime}Use the arrows to move, Escape to cancel, and Enter to view details.")
-  display.drawText(constants._captionCol, constants._captionRow-1,
-    "%c{lime}" + name + "%c{}")
+Game.Screen.Functions.simpleCaption = (helpText) ->
+  return (x, y, map, display) ->
+    name = ""
+    if @_map.isRemembered(x,y)
+      name = map.getTile(x, y).name()
+      if @_visibleCells["#{x},#{y}"]
+        entity = map.getEntityAt(x, y)
+        if entity
+          name = entity.name
+    else
+      name = "Unknown"
+    constants = Game.getConstants()
+    display.drawText(constants._captionCol, constants._captionRow,
+      helpText)
+    display.drawText(constants._captionCol, constants._captionRow-1,
+      "%c{lime}" + name + "%c{}")
 
 Game.Screen.lookScreen = new TargetBasedScreen({
-  captionFunction: Game.Screen.Functions.simpleCaption
+  captionFunction: Game.Screen.Functions.simpleCaption(
+    "%c{lime}Use the arrows to move, Escape to cancel, and Enter to view details."
+  )
 })
 
 Game.Screen.targetEntityScreen = new TargetBasedScreen({
-  captionFunction: Game.Screen.Functions.simpleCaption
+  captionFunction: Game.Screen.Functions.simpleCaption(
+    "%c{lime}Use the arrows to move, Escape to cancel, and Enter to choose target."
+  )
 })

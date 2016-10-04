@@ -34,9 +34,12 @@ Game.AbilityRepository.define({
       stats = {}
       entity.raiseEvent("getStats", {stats})
       self.raiseEvent("useEffect", {target, origin: entity, stats})
+    isOkFunction = (x, y, map, actor) ->
+      target = map.getEntityAt(x, y)
+      return (target && target.hasMixin("Destructible"))
     screen = Game.Screen.targetEntityScreen
     screen.setup(actor, actor.getX(), actor.getY(), offsets.x, offsets.y)
-    screen.setSelectFunction(okFunction)
+    screen.setSelectFunction({okFunction, isOkFunction})
     Game.Screen.playScreen.setSubScreen(screen)
 
   mixins: [Game.Mixins.ConsumesMemory, Game.Mixins.HasEffect,

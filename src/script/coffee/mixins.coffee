@@ -49,8 +49,9 @@ Game.Mixins.MessageRecipient =
   init: (template) ->
     @_messages = []
 
-  getMessages: ->
-    @_messages[(-1 * Game._constants._messageHeight)...]
+  getMessages: (amount) ->
+    blankLines = Game._constants._messageHeight - amount
+    @_messages[(-1 * (Game._constants._messageHeight - blankLines))...]
 
   getAllMessages: ->
     @_messages

@@ -6,6 +6,7 @@ Game =
     _screenHeight: 34
     _screenWidth: 82
     _messageHeight: 5
+    _messageWidth: 80
     _statusHeight: 16
     _statusRow: 51
     _locationHeight: 2
