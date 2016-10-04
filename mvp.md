@@ -18,7 +18,7 @@ MVP Specs
   - Scanning: Extends the range that you passively scan, and sight range. Weights random ranges of abilities toward the higher end of the ranges.
   - Stealth: Reduces the range that enemies detect you at, and weights oncoming abilities towards the lower end of their spectrum.
   - Offense: Increases the upper bound of damaging abilities.
-  - Sight is baseline 8 spaces, with Scan giving 1 range per.
+  - Sight is baseline 1  spaces, with Scan giving 1 range per.
   - Scan gives the ability to see mobs through obstructions at a rate of 1 per 3 Scan.
   - Scan boosts ability range minimum percent by 2.5% per point.
   - Stealth reduces Detection range at 1 square per 1.

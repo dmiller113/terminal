@@ -1,5 +1,27 @@
 Game.AbilityRepository = new Repository('abilities', Entity)
 
+# Targetting functions can probably be reused and generalized
+Game.AbilityRepository.isOkFunctions = {}
+
+# Function that takes an arbitrary amount of validators and returns true only
+# if all of them return true
+Game.AbilityRepository.isOkFunctions.and = (validators...) ->
+  return (x, y, map, actor) ->
+    for validator in validators
+      if !(validator(x, y, map, actor))
+        return false
+    return true
+
+# Only allows targetting of entities
+Game.AbilityRepository.isOkFunctions.isEntity = (x, y, map, actor) ->
+  return map.getEntityAt(x, y) != false
+
+# Only allows targetting of entities with a specific mixin
+Game.AbilityRepository.isOkFunctions.hasMixin = (mixin) ->
+  return (x, y, map, actor) ->
+    target = map.getEntityAt(x, y)
+    return target.hasMixin(mixin)
+
 Game.AbilityRepository.define({
   name: "ProtoBump"
   symbol: "?"
@@ -34,9 +56,11 @@ Game.AbilityRepository.define({
       stats = {}
       entity.raiseEvent("getStats", {stats})
       self.raiseEvent("useEffect", {target, origin: entity, stats})
-    isOkFunction = (x, y, map, actor) ->
-      target = map.getEntityAt(x, y)
-      return (target && target.hasMixin("Destructible"))
+    isOkFunction = Game.AbilityRepository.isOkFunctions.and(
+      Game.AbilityRepository.isOkFunctions.isEntity,
+      Game.AbilityRepository.isOkFunctions.hasMixin("Destructible")
+    )
+
     screen = Game.Screen.targetEntityScreen
     screen.setup(actor, actor.getX(), actor.getY(), offsets.x, offsets.y)
     screen.setSelectFunction({okFunction, isOkFunction})
