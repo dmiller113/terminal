@@ -31,7 +31,7 @@ class Map
       @addEntityAtRandomPosition(player)
 
     # Add some actors
-    for t in [0..15]
+    for t in [0..415]
       @addEntityAtRandomPosition(Game.EntityRepository.createRandom())
     for t in [0..10]
       @addEntityAtRandomPosition(Game.ItemRepository.createRandom())

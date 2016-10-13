@@ -230,9 +230,12 @@ Game.Screen.playScreen =
 
     # Contain list to 8 objects
     if inViewKeys.length > 8
-      inViewKeys = inViewKeys[...8]
-      display.drawText(constants._statusRow + 2, constants._inViewCol + 7,
-        "And more...")
+      inViewKeys = inViewKeys[...7]
+      inViewKeys.push("More...")
+      inView["More..."] = {
+        color: "#FFF",
+        number: ""
+      }
 
     for key in inViewKeys
       # Handle the seperation

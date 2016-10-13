@@ -15,16 +15,16 @@ MVP Specs
 - Successful uses of abilities gain Focus. At 100 Focus, an ability can be used at an upgraded capactiy, with 250% attack, 250% utility (Ultimate, Requires a resource)
 - 4 Stats:
   - Hardening: Mitigates nonFocused damage.
-  - Scanning: Extends the range that you passively scan, and sight range. Weights random ranges of abilities toward the higher end of the ranges.
+  - Scan: Extends the range that you passively scan, and sight range. Weights random ranges of abilities toward the higher end of the ranges.
   - Stealth: Reduces the range that enemies detect you at, and weights oncoming abilities towards the lower end of their spectrum.
-  - Offense: Increases the upper bound of damaging abilities.
+  - Attack: Increases the upper bound of damaging abilities.
   - Sight is baseline 1  spaces, with Scan giving 1 range per.
   - Scan gives the ability to see mobs through obstructions at a rate of 1 per 3 Scan.
-  - Scan boosts ability range minimum percent by 2.5% per point.
+  - Scan boosts ability range minimum percent by 10% per point.
   - Stealth reduces Detection range at 1 square per 1.
-  - Stealth reduces ability range maximum percent by 2.5% per point.
+  - Stealth reduces ability range maximum percent by 10% per point.
   - Hardening reduces nonFocused damage at a 1:1 basis.
-  - Attack increases ability range maximum percent by 2.5% per point
+  - Attack increases ability range maximum percent by 10% per point
 - 7 Enemies:
   - Barrier: Low movement blocking ICE, high HP with abilities that penalize abilities used on friendlies near it. Produces abilities that aid in defense, but also has strong close range attacks.
   - Tar Pit: High Stealth ICE that attempts to attack the terrain around the player from stealth, also attempts to degrade the player, inflicting ability corruption. Produces abilities that alter the battlefield and debilitate enemies. Also produces abilities that aid in stealth.
