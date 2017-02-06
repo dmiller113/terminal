@@ -5,7 +5,7 @@ MVP Specs
 - Boss on Second Floor
 - Three Different Bosses, 2 by chance, and 1 by Dungeon Triggers
 - 3 different starting ability/stat packages (Bumper, ranged, foomer/AoE)
-- Starting class determines Bump and Ranged Attack.
+- Starting loadout/package determines Bump and Ranged Attack.
 - 5 Ability slots:
   - Bump (100% attack, 100% utility),
   - Ranged Attack (100% attack, 100% utility),
