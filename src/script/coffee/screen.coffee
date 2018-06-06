@@ -63,7 +63,12 @@ Game.Screen.playScreen =
     if @_subscreen
       @_subscreen.render(display)
       return
-
+    # save some options
+    oldOptions = display.getOptions()
+    
+    # default background is cool green
+    display.setOptions({bg: "#002200"})
+    
     # Figure out where our top left cell should be
     screenWidth = Game.getScreenWidth()
     screenHeight = Game.getScreenHeight()
@@ -90,6 +95,9 @@ Game.Screen.playScreen =
       mapInsetX: mapInsetX, mapInsetY: mapInsetY,
       topLeftX: topLeftX, topLeftY: topLeftY,
     })
+    
+    # options back to how they were
+    display.setOptions(oldOptions)
 
 
   move: (cx, cy) ->
@@ -176,7 +184,7 @@ Game.Screen.playScreen =
         else if x == 0 or (x == constants._statusRow and y < constants._messageCol) or
                            x == Game.getWidth() - 1
           char = String.fromCharCode(0x2551)
-        display.draw(x, y, char, "lime", "black")
+        display.draw(x, y, char, "lime", "#002200")
 
     # Draw titles
     for prop, title of constants._titles
@@ -256,7 +264,7 @@ Game.Screen.playScreen =
     messageY = screenHeight + 2
     for message in @_player.getMessages(messageLines)
       messageY += display.drawText(
-        1, messageY, '%c{lawngreen}%b{black}' + message
+        1, messageY, '%c{lawngreen}' + message
       )
 
   _renderTiles: (display, constants, stats, dimensions, messageLines = 5) ->
